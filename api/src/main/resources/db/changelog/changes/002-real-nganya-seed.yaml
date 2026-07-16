@@ -1,0 +1,526 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-researched-kenya-nganyas
+      author: codex
+      changes:
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "44444444-4444-4444-4444-444444444444" }
+              - column: { name: route_number, value: "35/60" }
+              - column: { name: name, value: "Umoja Innercore Run" }
+              - column: { name: origin, value: "Ronald Ngala / Mfangano" }
+              - column: { name: destination, value: "Umoja I, Umoja II, Innercore" }
+              - column: { name: description, value: "CBD to Umoja via Jogoo Road; public route listings identify this corridor as 35/60." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "55555555-5555-5555-5555-555555555555" }
+              - column: { name: route_number, value: "33" }
+              - column: { name: name, value: "Embakasi / Mombasa Road" }
+              - column: { name: origin, value: "CBD / Tom Mboya" }
+              - column: { name: destination, value: "Embakasi, Fedha, Pipeline" }
+              - column: { name: description, value: "Mombasa Road and Jogoo Road Embakasi corridor, including Fedha and Pipeline variants." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "66666666-6666-6666-6666-666666666666" }
+              - column: { name: route_number, value: "32/42" }
+              - column: { name: name, value: "Dandora Line" }
+              - column: { name: origin, value: "Ambassadeur / Ronald Ngala" }
+              - column: { name: destination, value: "Dandora" }
+              - column: { name: description, value: "CBD to Dandora through Jogoo Road and Outer Ring corridors." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "77777777-7777-7777-7777-777777777777" }
+              - column: { name: route_number, value: "117" }
+              - column: { name: name, value: "Syokimau / Mlolongo" }
+              - column: { name: origin, value: "CBD" }
+              - column: { name: destination, value: "Syokimau, Katani Road, Mlolongo" }
+              - column: { name: description, value: "Mombasa Road corridor serving Syokimau, Katani Road and Mlolongo." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "88888888-8888-8888-8888-888888888888" }
+              - column: { name: route_number, value: "110" }
+              - column: { name: name, value: "Kitengela / Athi River" }
+              - column: { name: origin, value: "Haile Selassie / Easy Coach" }
+              - column: { name: destination, value: "Athi River, Kitengela" }
+              - column: { name: description, value: "CBD to Athi River and Kitengela along Mombasa Road." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "99999999-9999-9999-9999-999999999999" }
+              - column: { name: route_number, value: "237" }
+              - column: { name: name, value: "Thika Superhighway" }
+              - column: { name: origin, value: "CBD / Commercial / Fire Station" }
+              - column: { name: destination, value: "Ruiru, Juja, Thika" }
+              - column: { name: description, value: "Thika Road corridor linking Nairobi CBD with Ruiru, Juja and Thika." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "aaaaaaaa-1111-1111-1111-aaaaaaaa1111" }
+              - column: { name: route_number, value: "44" }
+              - column: { name: name, value: "Githurai 44" }
+              - column: { name: origin, value: "Ronald Ngala / Odeon" }
+              - column: { name: destination, value: "Zimmerman, Githurai, Kahawa West" }
+              - column: { name: description, value: "Thika Road short-distance corridor serving Zimmerman, Githurai and Kahawa West." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "bbbbbbbb-2222-2222-2222-bbbbbbbb2222" }
+              - column: { name: route_number, value: "19C" }
+              - column: { name: name, value: "Komarock / Kayole" }
+              - column: { name: origin, value: "CBD / Town" }
+              - column: { name: destination, value: "Manyanya, Komarock, Kayole" }
+              - column: { name: description, value: "Eastlands corridor serving Manyanja, Komarock and Kayole." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "cccccccc-3333-3333-3333-cccccccc3333" }
+              - column: { name: route_number, value: "119A" }
+              - column: { name: name, value: "Westlands / Gathiga" }
+              - column: { name: origin, value: "Roast House / Globe" }
+              - column: { name: destination, value: "Westlands, Gathiga" }
+              - column: { name: description, value: "Waiyaki Way and Westlands corridor with Lower Kabete variants." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000101" }
+              - column: { name: plate_number, value: "NGA-OPP-01" }
+              - column: { name: name, value: "Opposite" }
+              - column: { name: route_id, value: "44444444-4444-4444-4444-444444444444" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 97 }
+              - column: { name: screen_count, valueNumeric: 12 }
+              - column: { name: watcher_count, valueNumeric: 420 }
+              - column: { name: earnings_today, valueNumeric: 16800 }
+              - column: { name: fleet_position, valueNumeric: 1 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000102" }
+              - column: { name: plate_number, value: "NGA-BOO-02" }
+              - column: { name: name, value: "Boombox" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 94 }
+              - column: { name: screen_count, valueNumeric: 9 }
+              - column: { name: watcher_count, valueNumeric: 315 }
+              - column: { name: earnings_today, valueNumeric: 14200 }
+              - column: { name: fleet_position, valueNumeric: 2 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000103" }
+              - column: { name: plate_number, value: "NGA-VOI-03" }
+              - column: { name: name, value: "Voice Mail" }
+              - column: { name: route_id, value: "66666666-6666-6666-6666-666666666666" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 91 }
+              - column: { name: screen_count, valueNumeric: 7 }
+              - column: { name: watcher_count, valueNumeric: 221 }
+              - column: { name: earnings_today, valueNumeric: 11800 }
+              - column: { name: fleet_position, valueNumeric: 3 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000104" }
+              - column: { name: plate_number, value: "NGA-AFT-04" }
+              - column: { name: name, value: "Aftermath" }
+              - column: { name: route_id, value: "55555555-5555-5555-5555-555555555555" }
+              - column: { name: status, value: "MAINTENANCE" }
+              - column: { name: occupancy_status, value: "FULL" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 93 }
+              - column: { name: screen_count, valueNumeric: 8 }
+              - column: { name: watcher_count, valueNumeric: 180 }
+              - column: { name: earnings_today, valueNumeric: 9700 }
+              - column: { name: fleet_position, valueNumeric: 10 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000105" }
+              - column: { name: plate_number, value: "NGA-ZIT-05" }
+              - column: { name: name, value: "Zitran" }
+              - column: { name: route_id, value: "55555555-5555-5555-5555-555555555555" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 90 }
+              - column: { name: screen_count, valueNumeric: 6 }
+              - column: { name: watcher_count, valueNumeric: 205 }
+              - column: { name: earnings_today, valueNumeric: 10900 }
+              - column: { name: fleet_position, valueNumeric: 6 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000106" }
+              - column: { name: plate_number, value: "NGA-DET-06" }
+              - column: { name: name, value: "Detroit" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 96 }
+              - column: { name: screen_count, valueNumeric: 11 }
+              - column: { name: watcher_count, valueNumeric: 280 }
+              - column: { name: earnings_today, valueNumeric: 13700 }
+              - column: { name: fleet_position, valueNumeric: 4 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000107" }
+              - column: { name: plate_number, value: "NGA-PHE-07" }
+              - column: { name: name, value: "Phenomenal" }
+              - column: { name: route_id, value: "11111111-1111-1111-1111-111111111111" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 99 }
+              - column: { name: screen_count, valueNumeric: 14 }
+              - column: { name: watcher_count, valueNumeric: 365 }
+              - column: { name: earnings_today, valueNumeric: 15100 }
+              - column: { name: fleet_position, valueNumeric: 5 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000108" }
+              - column: { name: plate_number, value: "NGA-BYG-08" }
+              - column: { name: name, value: "Baba Yaga" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 95 }
+              - column: { name: screen_count, valueNumeric: 10 }
+              - column: { name: watcher_count, valueNumeric: 302 }
+              - column: { name: earnings_today, valueNumeric: 13250 }
+              - column: { name: fleet_position, valueNumeric: 7 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000109" }
+              - column: { name: plate_number, value: "NGA-STG-09" }
+              - column: { name: name, value: "Stung 2" }
+              - column: { name: route_id, value: "bbbbbbbb-2222-2222-2222-bbbbbbbb2222" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: false }
+              - column: { name: bass_level, valueNumeric: 89 }
+              - column: { name: screen_count, valueNumeric: 6 }
+              - column: { name: watcher_count, valueNumeric: 155 }
+              - column: { name: earnings_today, valueNumeric: 8900 }
+              - column: { name: fleet_position, valueNumeric: 9 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000110" }
+              - column: { name: plate_number, value: "NGA-MNY-10" }
+              - column: { name: name, value: "Money Fest" }
+              - column: { name: route_id, value: "55555555-5555-5555-5555-555555555555" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "FULL" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 96 }
+              - column: { name: screen_count, valueNumeric: 10 }
+              - column: { name: watcher_count, valueNumeric: 334 }
+              - column: { name: earnings_today, valueNumeric: 14750 }
+              - column: { name: fleet_position, valueNumeric: 8 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000111" }
+              - column: { name: plate_number, value: "NGA-MOD-11" }
+              - column: { name: name, value: "Mood" }
+              - column: { name: route_id, value: "cccccccc-3333-3333-3333-cccccccc3333" }
+              - column: { name: status, value: "MAINTENANCE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 93 }
+              - column: { name: screen_count, valueNumeric: 9 }
+              - column: { name: watcher_count, valueNumeric: 260 }
+              - column: { name: earnings_today, valueNumeric: 8400 }
+              - column: { name: fleet_position, valueNumeric: 14 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000112" }
+              - column: { name: plate_number, value: "NGA-CAT-12" }
+              - column: { name: name, value: "Catalyst" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 98 }
+              - column: { name: screen_count, valueNumeric: 15 }
+              - column: { name: watcher_count, valueNumeric: 390 }
+              - column: { name: earnings_today, valueNumeric: 16200 }
+              - column: { name: fleet_position, valueNumeric: 11 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000113" }
+              - column: { name: plate_number, value: "NGA-ADE-13" }
+              - column: { name: name, value: "Adele" }
+              - column: { name: route_id, value: "77777777-7777-7777-7777-777777777777" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 87 }
+              - column: { name: screen_count, valueNumeric: 5 }
+              - column: { name: watcher_count, valueNumeric: 144 }
+              - column: { name: earnings_today, valueNumeric: 7800 }
+              - column: { name: fleet_position, valueNumeric: 15 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000114" }
+              - column: { name: plate_number, value: "NGA-SPL-14" }
+              - column: { name: name, value: "South-Pole" }
+              - column: { name: route_id, value: "44444444-4444-4444-4444-444444444444" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: false }
+              - column: { name: bass_level, valueNumeric: 86 }
+              - column: { name: screen_count, valueNumeric: 5 }
+              - column: { name: watcher_count, valueNumeric: 132 }
+              - column: { name: earnings_today, valueNumeric: 7200 }
+              - column: { name: fleet_position, valueNumeric: 16 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000115" }
+              - column: { name: plate_number, value: "NGA-PUN-15" }
+              - column: { name: name, value: "Punisher" }
+              - column: { name: route_id, value: "11111111-1111-1111-1111-111111111111" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "FULL" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 90 }
+              - column: { name: screen_count, valueNumeric: 7 }
+              - column: { name: watcher_count, valueNumeric: 176 }
+              - column: { name: earnings_today, valueNumeric: 9300 }
+              - column: { name: fleet_position, valueNumeric: 17 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000116" }
+              - column: { name: plate_number, value: "NGA-BND-16" }
+              - column: { name: name, value: "Bond 007" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "OFFLINE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: false }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 88 }
+              - column: { name: screen_count, valueNumeric: 6 }
+              - column: { name: watcher_count, valueNumeric: 98 }
+              - column: { name: earnings_today, valueNumeric: 0 }
+              - column: { name: fleet_position, valueNumeric: 20 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000117" }
+              - column: { name: plate_number, value: "NGA-SHK-17" }
+              - column: { name: name, value: "Shakur" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: false }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 88 }
+              - column: { name: screen_count, valueNumeric: 7 }
+              - column: { name: watcher_count, valueNumeric: 126 }
+              - column: { name: earnings_today, valueNumeric: 6900 }
+              - column: { name: fleet_position, valueNumeric: 18 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+
+        - sql:
+            sql: |
+              INSERT INTO crew_members (id, vehicle_id, display_name, role, rating, active, created_at, updated_at)
+              VALUES
+              ('10000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000101', 'Opposite Driver', 'DRIVER', 4.7, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-000000000102', 'Boombox Driver', 'DRIVER', 4.6, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000103', '00000000-0000-0000-0000-000000000103', 'Voice Mail Driver', 'DRIVER', 4.5, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000104', 'Aftermath Driver', 'DRIVER', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000105', 'Zitran Driver', 'DRIVER', 4.5, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000106', '00000000-0000-0000-0000-000000000106', 'Detroit Driver', 'DRIVER', 4.6, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000107', '00000000-0000-0000-0000-000000000107', 'Phenomenal Driver', 'DRIVER', 4.7, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000108', '00000000-0000-0000-0000-000000000108', 'Baba Yaga Driver', 'DRIVER', 4.8, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000109', '00000000-0000-0000-0000-000000000109', 'Stung 2 Driver', 'DRIVER', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000110', '00000000-0000-0000-0000-000000000110', 'Money Fest Driver', 'DRIVER', 4.8, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000111', '00000000-0000-0000-0000-000000000111', 'Mood Driver', 'DRIVER', 4.3, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000112', '00000000-0000-0000-0000-000000000112', 'Catalyst Driver', 'DRIVER', 4.7, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000113', '00000000-0000-0000-0000-000000000113', 'Adele Driver', 'DRIVER', 4.5, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000114', '00000000-0000-0000-0000-000000000114', 'South-Pole Driver', 'DRIVER', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000115', '00000000-0000-0000-0000-000000000115', 'Punisher Driver', 'DRIVER', 4.5, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000116', '00000000-0000-0000-0000-000000000116', 'Bond 007 Driver', 'DRIVER', 4.3, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('10000000-0000-0000-0000-000000000117', '00000000-0000-0000-0000-000000000117', 'Shakur Driver', 'DRIVER', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00');
+              INSERT INTO crew_members (id, vehicle_id, display_name, role, rating, active, created_at, updated_at)
+              VALUES
+              ('20000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000101', 'Opposite Conductor', 'CONDUCTOR', 4.6, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-000000000102', 'Boombox Conductor', 'CONDUCTOR', 4.5, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000103', '00000000-0000-0000-0000-000000000103', 'Voice Mail Conductor', 'CONDUCTOR', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000104', 'Aftermath Conductor', 'CONDUCTOR', 4.3, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000105', 'Zitran Conductor', 'CONDUCTOR', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000106', '00000000-0000-0000-0000-000000000106', 'Detroit Conductor', 'CONDUCTOR', 4.5, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000107', '00000000-0000-0000-0000-000000000107', 'Phenomenal Conductor', 'CONDUCTOR', 4.6, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000108', '00000000-0000-0000-0000-000000000108', 'Baba Yaga Conductor', 'CONDUCTOR', 4.7, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000109', '00000000-0000-0000-0000-000000000109', 'Stung 2 Conductor', 'CONDUCTOR', 4.3, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000110', '00000000-0000-0000-0000-000000000110', 'Money Fest Conductor', 'CONDUCTOR', 4.7, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000111', '00000000-0000-0000-0000-000000000111', 'Mood Conductor', 'CONDUCTOR', 4.2, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000112', '00000000-0000-0000-0000-000000000112', 'Catalyst Conductor', 'CONDUCTOR', 4.6, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000113', '00000000-0000-0000-0000-000000000113', 'Adele Conductor', 'CONDUCTOR', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000114', '00000000-0000-0000-0000-000000000114', 'South-Pole Conductor', 'CONDUCTOR', 4.3, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000115', '00000000-0000-0000-0000-000000000115', 'Punisher Conductor', 'CONDUCTOR', 4.4, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000116', '00000000-0000-0000-0000-000000000116', 'Bond 007 Conductor', 'CONDUCTOR', 4.2, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00'),
+              ('20000000-0000-0000-0000-000000000117', '00000000-0000-0000-0000-000000000117', 'Shakur Conductor', 'CONDUCTOR', 4.3, true, '2026-07-16 00:00:00+00', '2026-07-16 00:00:00+00');
+        - update:
+            tableName: crew_members
+            columns:
+              - column: { name: display_name, value: "Gabriel Mbugua" }
+            where: "vehicle_id = '00000000-0000-0000-0000-000000000113' AND role = 'DRIVER'"
+        - update:
+            tableName: crew_members
+            columns:
+              - column: { name: display_name, value: "Ostoh Ranking" }
+            where: "vehicle_id = '00000000-0000-0000-0000-000000000110' AND role = 'DRIVER'"
+
+        - sql:
+            sql: |
+              INSERT INTO vehicle_locations (id, vehicle_id, latitude, longitude, speed_kph, recorded_at)
+              VALUES
+              ('30000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000101', -1.2860, 36.8740, 31, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-000000000102', -1.3940, 36.7580, 42, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000103', '00000000-0000-0000-0000-000000000103', -1.2460, 36.8920, 26, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000104', -1.3180, 36.8950, 0, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000105', -1.3260, 36.8800, 37, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000106', '00000000-0000-0000-0000-000000000106', -1.3975, 36.7615, 35, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000107', '00000000-0000-0000-0000-000000000107', -1.3010, 36.7580, 29, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000108', '00000000-0000-0000-0000-000000000108', -1.3910, 36.7600, 33, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000109', '00000000-0000-0000-0000-000000000109', -1.2620, 36.9130, 24, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000110', '00000000-0000-0000-0000-000000000110', -1.3200, 36.8940, 41, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000111', '00000000-0000-0000-0000-000000000111', -1.2650, 36.8040, 0, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000112', '00000000-0000-0000-0000-000000000112', -1.3945, 36.7622, 38, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000113', '00000000-0000-0000-0000-000000000113', -1.3610, 36.9100, 43, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000114', '00000000-0000-0000-0000-000000000114', -1.2840, 36.8760, 28, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000115', '00000000-0000-0000-0000-000000000115', -1.3020, 36.7600, 39, '2026-07-16 12:20:00+00'),
+              ('30000000-0000-0000-0000-000000000117', '00000000-0000-0000-0000-000000000117', -1.3920, 36.7590, 36, '2026-07-16 12:20:00+00');
+
+        - insert:
+            tableName: fleet_alerts
+            columns:
+              - column: { name: id, value: "00000000-ffff-0000-0000-000000000101" }
+              - column: { name: vehicle_id, value: "00000000-0000-0000-0000-000000000104" }
+              - column: { name: type, value: "Maintenance" }
+              - column: { name: message, value: "Aftermath is in a maintenance state after award-season verification checks." }
+              - column: { name: severity, value: "WARNING" }
+              - column: { name: resolved, valueBoolean: false }
+              - column: { name: created_at, value: "2026-07-16 12:22:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 12:22:00+00" }
+        - insert:
+            tableName: fleet_alerts
+            columns:
+              - column: { name: id, value: "00000000-ffff-0000-0000-000000000102" }
+              - column: { name: vehicle_id, value: "00000000-0000-0000-0000-000000000116" }
+              - column: { name: type, value: "Verification" }
+              - column: { name: message, value: "Bond 007 needs fresh media and route verification before public promotion." }
+              - column: { name: severity, value: "INFO" }
+              - column: { name: resolved, valueBoolean: false }
+              - column: { name: created_at, value: "2026-07-16 12:24:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 12:24:00+00" }
+        - insert:
+            tableName: fleet_alerts
+            columns:
+              - column: { name: id, value: "00000000-ffff-0000-0000-000000000103" }
+              - column: { name: vehicle_id, value: "00000000-0000-0000-0000-000000000111" }
+              - column: { name: type, value: "Operations" }
+              - column: { name: message, value: "Mood is marked for suspension clearance review before returning to live tracking." }
+              - column: { name: severity, value: "CRITICAL" }
+              - column: { name: resolved, valueBoolean: false }
+              - column: { name: created_at, value: "2026-07-16 12:26:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 12:26:00+00" }
