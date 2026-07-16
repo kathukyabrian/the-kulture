@@ -1,0 +1,427 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-core-tables
+      author: codex
+      changes:
+        - createTable:
+            tableName: routes
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: route_number
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: name
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: origin
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destination
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: plate_number
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: name
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: route_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: occupancy_status
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: verified
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: wifi_available
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: bass_level
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: screen_count
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: watcher_count
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: earnings_today
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fleet_position
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: vehicles
+            baseColumnNames: route_id
+            referencedTableName: routes
+            referencedColumnNames: id
+            constraintName: fk_vehicles_route
+        - createTable:
+            tableName: crew_members
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: display_name
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rating
+                  type: numeric(2, 1)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: crew_members
+            baseColumnNames: vehicle_id
+            referencedTableName: vehicles
+            referencedColumnNames: id
+            constraintName: fk_crew_members_vehicle
+        - createTable:
+            tableName: vehicle_locations
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: latitude
+                  type: numeric(10, 7)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: longitude
+                  type: numeric(10, 7)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: speed_kph
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recorded_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_locations
+            baseColumnNames: vehicle_id
+            referencedTableName: vehicles
+            referencedColumnNames: id
+            constraintName: fk_vehicle_locations_vehicle
+        - createTable:
+            tableName: fleet_alerts
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(60)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message
+                  type: varchar(300)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: severity
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resolved
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: fleet_alerts
+            baseColumnNames: vehicle_id
+            referencedTableName: vehicles
+            referencedColumnNames: id
+            constraintName: fk_fleet_alerts_vehicle
+
+  - changeSet:
+      id: 002-seed-demo-data
+      author: codex
+      changes:
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "11111111-1111-1111-1111-111111111111" }
+              - column: { name: route_number, value: "111" }
+              - column: { name: name, value: "Ngong Road Express" }
+              - column: { name: origin, value: "Railways" }
+              - column: { name: destination, value: "Ngong" }
+              - column: { name: description, value: "High-energy run from Nairobi CBD to Ngong Road." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "22222222-2222-2222-2222-222222222222" }
+              - column: { name: route_number, value: "46" }
+              - column: { name: name, value: "Kawangware Circuit" }
+              - column: { name: origin, value: "Kencom" }
+              - column: { name: destination, value: "Kawangware" }
+              - column: { name: description, value: "CBD to Kawangware via Valley Arcade." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: routes
+            columns:
+              - column: { name: id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: route_number, value: "125" }
+              - column: { name: name, value: "Rongai Night Run" }
+              - column: { name: origin, value: "Railways" }
+              - column: { name: destination, value: "Rongai" }
+              - column: { name: description, value: "CBD to Rongai with late-night commuter demand." }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" }
+              - column: { name: plate_number, value: "KDJ 842X" }
+              - column: { name: name, value: "The Matrix" }
+              - column: { name: route_id, value: "11111111-1111-1111-1111-111111111111" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "MEDIUM" }
+              - column: { name: verified, valueBoolean: true }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 92 }
+              - column: { name: screen_count, valueNumeric: 8 }
+              - column: { name: watcher_count, valueNumeric: 128 }
+              - column: { name: earnings_today, valueNumeric: 8200 }
+              - column: { name: fleet_position, valueNumeric: 4 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" }
+              - column: { name: plate_number, value: "KCT 111A" }
+              - column: { name: name, value: "Cyberpunk" }
+              - column: { name: route_id, value: "22222222-2222-2222-2222-222222222222" }
+              - column: { name: status, value: "ONLINE" }
+              - column: { name: occupancy_status, value: "LOW" }
+              - column: { name: verified, valueBoolean: false }
+              - column: { name: wifi_available, valueBoolean: true }
+              - column: { name: bass_level, valueNumeric: 88 }
+              - column: { name: screen_count, valueNumeric: 6 }
+              - column: { name: watcher_count, valueNumeric: 94 }
+              - column: { name: earnings_today, valueNumeric: 7600 }
+              - column: { name: fleet_position, valueNumeric: 7 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicles
+            columns:
+              - column: { name: id, value: "cccccccc-cccc-cccc-cccc-cccccccccccc" }
+              - column: { name: plate_number, value: "KBB 999Z" }
+              - column: { name: name, value: "Soul Train" }
+              - column: { name: route_id, value: "33333333-3333-3333-3333-333333333333" }
+              - column: { name: status, value: "MAINTENANCE" }
+              - column: { name: occupancy_status, value: "FULL" }
+              - column: { name: verified, valueBoolean: false }
+              - column: { name: wifi_available, valueBoolean: false }
+              - column: { name: bass_level, valueNumeric: 95 }
+              - column: { name: screen_count, valueNumeric: 10 }
+              - column: { name: watcher_count, valueNumeric: 42 }
+              - column: { name: earnings_today, valueNumeric: 5100 }
+              - column: { name: fleet_position, valueNumeric: 12 }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: crew_members
+            columns:
+              - column: { name: id, value: "dddddddd-dddd-dddd-dddd-dddddddddddd" }
+              - column: { name: vehicle_id, value: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" }
+              - column: { name: display_name, value: "Kim" }
+              - column: { name: role, value: "DRIVER" }
+              - column: { name: rating, valueNumeric: 4.8 }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: crew_members
+            columns:
+              - column: { name: id, value: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee" }
+              - column: { name: vehicle_id, value: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" }
+              - column: { name: display_name, value: "Jojo" }
+              - column: { name: role, value: "CONDUCTOR" }
+              - column: { name: rating, valueNumeric: 4.7 }
+              - column: { name: active, valueBoolean: true }
+              - column: { name: created_at, value: "2026-07-16 00:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 00:00:00+00" }
+        - insert:
+            tableName: vehicle_locations
+            columns:
+              - column: { name: id, value: "11111111-aaaa-aaaa-aaaa-111111111111" }
+              - column: { name: vehicle_id, value: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" }
+              - column: { name: latitude, valueNumeric: -1.2921 }
+              - column: { name: longitude, valueNumeric: 36.8219 }
+              - column: { name: speed_kph, valueNumeric: 34 }
+              - column: { name: recorded_at, value: "2026-07-16 12:15:00+00" }
+        - insert:
+            tableName: vehicle_locations
+            columns:
+              - column: { name: id, value: "22222222-bbbb-bbbb-bbbb-222222222222" }
+              - column: { name: vehicle_id, value: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" }
+              - column: { name: latitude, valueNumeric: -1.2833 }
+              - column: { name: longitude, valueNumeric: 36.8167 }
+              - column: { name: speed_kph, valueNumeric: 28 }
+              - column: { name: recorded_at, value: "2026-07-16 12:16:00+00" }
+        - insert:
+            tableName: fleet_alerts
+            columns:
+              - column: { name: id, value: "ffffffff-ffff-ffff-ffff-ffffffffffff" }
+              - column: { name: vehicle_id, value: "cccccccc-cccc-cccc-cccc-cccccccccccc" }
+              - column: { name: type, value: "Verification" }
+              - column: { name: message, value: "New gallery and plate details need admin review." }
+              - column: { name: severity, value: "WARNING" }
+              - column: { name: resolved, valueBoolean: false }
+              - column: { name: created_at, value: "2026-07-16 12:00:00+00" }
+              - column: { name: updated_at, value: "2026-07-16 12:00:00+00" }
