@@ -1,0 +1,109 @@
+<main class="min-h-dvh bg-background pb-8 text-ink">
+  <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-outline/50 bg-background/80 px-5 backdrop-blur-xl">
+    <a routerLink="/" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" aria-label="Back to map">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1 class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</h1>
+    <a routerLink="/crew" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Crew dashboard">
+      <span class="material-symbols-outlined">radio_button_checked</span>
+    </a>
+  </header>
+
+  <section class="mx-auto grid max-w-7xl gap-4 px-5 py-6 md:grid-cols-3">
+    <div class="rounded-lg bg-surface-high p-5 rim-light">
+      <div class="flex items-center justify-between">
+        <p class="font-mono text-sm uppercase text-secondary">Active Nganyas</p>
+        <span class="material-symbols-outlined text-secondary">directions_bus</span>
+      </div>
+      <p class="mt-5 font-display text-5xl font-black">{{ activeVehicles }}</p>
+      <p class="mt-1 text-sm text-secondary">+12% from last hour</p>
+    </div>
+    <div class="rounded-lg bg-surface-high p-5 rim-light">
+      <div class="flex items-center justify-between">
+        <p class="font-mono text-sm uppercase text-danger">Live Alerts</p>
+        <span class="material-symbols-outlined text-danger">warning</span>
+      </div>
+      <p class="mt-5 font-display text-5xl font-black">{{ alerts.length }}</p>
+      <p class="mt-1 text-sm text-muted">{{ pendingVerification }} pending verification</p>
+    </div>
+    <div class="rounded-lg bg-surface-high p-5 rim-light">
+      <div class="flex items-center justify-between">
+        <p class="font-mono text-sm uppercase text-primary">Revenue KES</p>
+        <span class="material-symbols-outlined text-primary">payments</span>
+      </div>
+      <p class="mt-5 font-display text-5xl font-black">{{ projectedRevenue / 1000 | number:'1.1-1' }}K</p>
+      <p class="mt-1 text-sm text-muted">Daily projected</p>
+    </div>
+  </section>
+
+  <section class="mx-auto grid max-w-7xl gap-4 px-5 md:grid-cols-12">
+    <div class="relative min-h-[420px] overflow-hidden rounded-lg bg-surface md:col-span-8 rim-light">
+      <div class="absolute inset-0 map-grid"></div>
+      <svg class="absolute inset-0 h-full w-full" viewBox="0 0 760 420" aria-hidden="true">
+        <path d="M70 340 C200 250 280 310 380 210 C480 110 585 160 690 62" fill="none" stroke="#ecb2ff" stroke-width="4" stroke-linecap="round" />
+        <path d="M48 130 L232 170 L430 96 L710 220" fill="none" stroke="#a7ffb3" stroke-width="3" stroke-dasharray="12 8" />
+        <circle cx="244" cy="258" r="8" fill="#e80063" />
+        <circle cx="520" cy="145" r="8" fill="#00ee70" />
+      </svg>
+      <div class="absolute left-4 top-4 rounded border border-outline/60 bg-surface/80 p-3 backdrop-blur-xl">
+        <p class="font-mono text-xs uppercase text-primary">Live Route Status</p>
+        <p class="mt-1 text-sm text-muted">Tracking {{ activeVehicles }} active routes</p>
+      </div>
+    </div>
+
+    <aside class="rounded-lg bg-surface p-4 md:col-span-4 rim-light">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-display text-2xl font-black uppercase text-primary">Pending</h2>
+        <span class="rounded border border-primary/40 px-2 py-1 font-mono text-xs text-primary">{{ pendingVerification }} new</span>
+      </div>
+      <div class="space-y-3">
+        <div *ngFor="let vehicle of vehicles" class="rounded border border-outline/60 bg-surface-high p-3" [class.hidden]="vehicle.verified">
+          <p class="font-mono text-sm font-bold text-ink">[ {{ vehicle.plateNumber }} ]</p>
+          <p class="mt-1 text-sm text-muted">{{ vehicle.name }} · {{ vehicle.route.name }}</p>
+          <button class="mt-3 min-h-10 w-full rounded bg-secondary font-mono text-xs uppercase text-[#003915] active:scale-[0.99]">Verify</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="rounded-lg bg-surface p-4 md:col-span-7 rim-light">
+      <h2 class="mb-4 font-display text-2xl font-black uppercase text-secondary">Top Crew Performance</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[520px] text-left">
+          <thead class="border-b border-outline/60 font-mono text-xs uppercase text-muted">
+            <tr>
+              <th class="py-3">Crew</th>
+              <th>Vehicle</th>
+              <th>Route</th>
+              <th class="text-right">KES</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vehicle of vehicles" class="border-b border-outline/40">
+              <td class="py-4">{{ vehicle.crew[0].name }} / {{ vehicle.crew[1].name }}</td>
+              <td class="font-mono text-sm">{{ vehicle.name }}</td>
+              <td class="font-mono text-sm">[ {{ vehicle.route.routeNumber }} ]</td>
+              <td class="text-right font-mono text-sm">{{ vehicle.earningsToday | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="rounded-lg bg-surface p-4 md:col-span-5 rim-light">
+      <h2 class="mb-4 font-display text-2xl font-black uppercase text-primary">Fleet Distribution</h2>
+      <div class="grid place-items-center py-6">
+        <div class="grid h-48 w-48 place-items-center rounded-full border-[18px] border-primary border-r-secondary border-b-tertiary shadow-neon">
+          <div class="text-center">
+            <p class="font-mono text-xs uppercase text-muted">Total</p>
+            <p class="font-display text-5xl font-black">{{ vehicles.length }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3 font-mono text-xs uppercase text-muted">
+        <span><i class="mr-2 inline-block h-2 w-2 bg-primary"></i>Active</span>
+        <span><i class="mr-2 inline-block h-2 w-2 bg-secondary"></i>Idle</span>
+        <span><i class="mr-2 inline-block h-2 w-2 bg-tertiary"></i>Maint.</span>
+      </div>
+    </section>
+  </section>
+</main>

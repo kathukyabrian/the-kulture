@@ -1,0 +1,86 @@
+<main class="relative min-h-dvh overflow-hidden bg-background text-ink">
+  <div class="absolute inset-0 map-grid"></div>
+  <svg class="absolute inset-0 h-full w-full opacity-90" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M42 620 C120 500 142 358 224 296 C286 250 318 180 360 96" fill="none" stroke="#ecb2ff" stroke-width="4" stroke-linecap="round" class="drop-shadow-[0_0_10px_rgba(236,178,255,0.8)]" />
+    <path d="M20 210 C104 260 168 236 226 182 C276 135 326 152 382 188" fill="none" stroke="#a7ffb3" stroke-width="3" stroke-dasharray="10 9" stroke-linecap="round" />
+    <path d="M94 760 C132 646 230 602 294 508 C330 455 344 380 372 326" fill="none" stroke="#ffb2bf" stroke-width="2" stroke-dasharray="5 8" stroke-linecap="round" />
+  </svg>
+
+  <header class="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between border-b border-outline/50 bg-background/70 px-5 backdrop-blur-xl">
+    <button class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary shadow-neon" aria-label="Open menu">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <a routerLink="/" class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</a>
+    <a routerLink="/crew" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Crew dashboard">
+      <span class="material-symbols-outlined">person_pin_circle</span>
+    </a>
+  </header>
+
+  <section class="fixed left-4 right-4 top-20 z-20 md:left-1/2 md:right-auto md:w-[520px] md:-translate-x-1/2">
+    <label class="flex min-h-14 items-center gap-3 rounded border border-secondary/40 bg-surface/90 px-4 shadow-lime backdrop-blur-xl">
+      <span class="material-symbols-outlined text-secondary">search</span>
+      <input
+        [(ngModel)]="query"
+        class="h-12 min-w-0 flex-1 border-0 bg-transparent font-mono text-sm uppercase text-ink outline-none placeholder:text-muted/60 focus:ring-0"
+        placeholder="SEARCH ROUTES"
+        type="search"
+      />
+    </label>
+  </section>
+
+  <a
+    *ngFor="let vehicle of vehicles; let index = index"
+    [routerLink]="['/nganyas', vehicle.id]"
+    class="absolute z-10"
+    [ngClass]="[
+      index === 0 ? 'left-[28%] top-[45%]' : '',
+      index === 1 ? 'right-[20%] top-[27%]' : '',
+      index === 2 ? 'left-[48%] top-[67%]' : ''
+    ]"
+  >
+    <span class="relative block h-4 w-4 rounded-full bg-tertiary-strong live-ping"></span>
+    <span class="mt-3 block whitespace-nowrap rounded border border-primary/40 bg-surface/85 px-2 py-1 font-mono text-xs uppercase text-primary backdrop-blur">
+      [ {{ vehicle.route.routeNumber }} ] {{ vehicle.name }}
+    </span>
+  </a>
+
+  <section class="fixed bottom-20 left-0 right-0 z-20 rounded-t-xl border-t border-primary/30 bg-surface/90 px-5 pb-5 pt-3 shadow-neon backdrop-blur-xl md:bottom-6 md:left-6 md:right-auto md:w-[420px] md:rounded-xl md:border">
+    <div class="mx-auto mb-4 h-1 w-12 rounded-full bg-outline"></div>
+    <div class="mb-4 flex items-start justify-between gap-4">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Live tracking active</p>
+        <h1 class="font-display text-3xl font-black uppercase text-ink">Nearby Nganyas</h1>
+      </div>
+      <a routerLink="/fleet" class="grid h-11 w-11 place-items-center rounded border border-primary/40 text-primary" aria-label="Fleet overview">
+        <span class="material-symbols-outlined">monitoring</span>
+      </a>
+    </div>
+
+    <div class="space-y-3">
+      <a
+        *ngFor="let vehicle of filteredVehicles"
+        [routerLink]="['/nganyas', vehicle.id]"
+        class="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg border border-outline/60 bg-surface-high/70 p-3 rim-light active:scale-[0.99]"
+      >
+        <div class="grid h-14 w-16 place-items-center rounded bg-background font-mono text-sm font-bold text-primary">
+          [ {{ vehicle.route.routeNumber }} ]
+        </div>
+        <div class="min-w-0">
+          <h2 class="truncate font-display text-lg font-extrabold uppercase">{{ vehicle.name }}</h2>
+          <p class="truncate text-sm text-muted">{{ vehicle.route.origin }} to {{ vehicle.route.destination }} · {{ vehicle.plateNumber }}</p>
+        </div>
+        <div class="text-right">
+          <span class="block font-mono text-xs uppercase" [ngClass]="vehicle.status === 'ONLINE' ? 'text-secondary' : 'text-tertiary'">{{ statusLabel(vehicle) }}</span>
+          <span class="mt-1 block rounded border border-outline px-2 py-1 font-mono text-[10px] uppercase text-muted">{{ vehicle.occupancyStatus }}</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <nav class="fixed bottom-0 left-0 right-0 z-30 grid h-16 grid-cols-4 border-t border-outline bg-background/90 backdrop-blur-xl md:hidden">
+    <a routerLink="/" class="grid place-items-center text-primary" aria-label="Map"><span class="material-symbols-outlined">map</span></a>
+    <a routerLink="/fleet" class="grid place-items-center text-muted" aria-label="Fleet"><span class="material-symbols-outlined">directions_bus</span></a>
+    <a [routerLink]="['/nganyas', vehicles[0].id]" class="grid place-items-center text-muted" aria-label="Profile"><span class="material-symbols-outlined">badge</span></a>
+    <a routerLink="/crew" class="grid place-items-center text-muted" aria-label="Crew"><span class="material-symbols-outlined">radio_button_checked</span></a>
+  </nav>
+</main>

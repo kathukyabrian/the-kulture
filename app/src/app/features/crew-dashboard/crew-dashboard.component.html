@@ -1,0 +1,81 @@
+<main class="min-h-dvh bg-background px-5 pb-8 pt-4 text-ink">
+  <header class="mx-auto flex max-w-3xl items-center justify-between">
+    <a routerLink="/" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" aria-label="Back to map">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1 class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</h1>
+    <a routerLink="/fleet" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Fleet overview">
+      <span class="material-symbols-outlined">monitoring</span>
+    </a>
+  </header>
+
+  <section class="mx-auto mt-6 max-w-3xl overflow-hidden rounded-xl border border-primary/20 bg-surface p-5 shadow-neon rim-light">
+    <div class="relative min-h-56 rounded-lg bg-background p-5">
+      <div class="absolute inset-0 map-grid opacity-50"></div>
+      <div class="relative">
+        <p class="font-mono text-sm uppercase tracking-[0.16em] text-muted">Current status: {{ live ? 'Online' : 'Offline' }}</p>
+        <button
+          type="button"
+          (click)="toggleLive()"
+          class="mt-6 grid h-36 w-36 place-items-center rounded-full border-2 uppercase shadow-neon transition active:scale-95"
+          [ngClass]="live ? 'border-secondary bg-secondary text-[#003915] shadow-lime' : 'border-primary bg-surface-high text-primary'"
+          aria-label="Toggle live tracking"
+        >
+          <span class="font-display text-3xl font-black italic">{{ live ? 'LIVE' : 'GO LIVE' }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto mt-4 grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-4">
+    <div class="rounded-lg bg-surface-high p-4 rim-light">
+      <span class="material-symbols-outlined text-secondary">visibility</span>
+      <p class="mt-4 font-display text-3xl font-black text-secondary">{{ vehicle.watcherCount }}</p>
+      <p class="font-mono text-xs uppercase text-muted">Commuters</p>
+    </div>
+    <div class="rounded-lg bg-surface-high p-4 rim-light">
+      <span class="material-symbols-outlined text-primary">route</span>
+      <p class="mt-4 font-display text-3xl font-black text-primary">[ {{ vehicle.route.routeNumber }} ]</p>
+      <p class="font-mono text-xs uppercase text-muted">{{ vehicle.route.destination }}</p>
+    </div>
+    <div class="rounded-lg bg-surface-high p-4 rim-light">
+      <span class="material-symbols-outlined text-tertiary">payments</span>
+      <p class="mt-4 font-display text-3xl font-black text-tertiary">{{ vehicle.earningsToday / 1000 | number:'1.1-1' }}k</p>
+      <p class="font-mono text-xs uppercase text-muted">KES Today</p>
+    </div>
+    <div class="rounded-lg bg-surface-high p-4 rim-light">
+      <span class="material-symbols-outlined text-ink">leaderboard</span>
+      <p class="mt-4 font-display text-3xl font-black">#{{ vehicle.fleetPosition }}</p>
+      <p class="font-mono text-xs uppercase text-muted">In Fleet</p>
+    </div>
+  </section>
+
+  <section class="mx-auto mt-6 max-w-3xl">
+    <h2 class="border-l-2 border-secondary pl-3 font-mono text-sm uppercase tracking-[0.16em] text-muted">Quick Actions</h2>
+    <div class="mt-3 grid grid-cols-3 gap-3">
+      <button class="min-h-24 rounded-lg border border-primary/30 bg-surface p-3 text-left text-primary active:scale-[0.98]">
+        <span class="material-symbols-outlined">edit_road</span>
+        <span class="mt-3 block font-mono text-xs uppercase">Update Route</span>
+      </button>
+      <button class="min-h-24 rounded-lg border border-secondary/30 bg-surface p-3 text-left text-secondary active:scale-[0.98]">
+        <span class="material-symbols-outlined">local_parking</span>
+        <span class="mt-3 block font-mono text-xs uppercase">Pit Stop</span>
+      </button>
+      <button class="min-h-24 rounded-lg border border-tertiary/30 bg-surface p-3 text-left text-tertiary active:scale-[0.98]">
+        <span class="material-symbols-outlined">forum</span>
+        <span class="mt-3 block font-mono text-xs uppercase">Crew Chat</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="mx-auto mt-6 max-w-3xl overflow-hidden rounded-lg bg-surface rim-light">
+    <div class="h-44 map-grid"></div>
+    <div class="flex items-center justify-between p-4">
+      <div>
+        <p class="font-mono text-xs uppercase text-primary">Current Location</p>
+        <p class="text-sm text-muted">{{ vehicle.latitude }}, {{ vehicle.longitude }}</p>
+      </div>
+      <span class="rounded border border-secondary/40 px-3 py-2 font-mono text-xs uppercase text-secondary">{{ vehicle.occupancyStatus }}</span>
+    </div>
+  </section>
+</main>
