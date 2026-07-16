@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
@@ -17,6 +17,7 @@ export class LiveMapComponent implements OnInit {
   vehicles: VehicleSummaryResponse[] = [];
   loading = true;
   error = '';
+  menuOpen = false;
 
   private readonly searchTerms = new Subject<string>();
 
@@ -50,6 +51,19 @@ export class LiveMapComponent implements OnInit {
 
   onSearch(query: string): void {
     this.searchTerms.next(query);
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMenuOnEscape(): void {
+    this.closeMenu();
   }
 
   statusLabel(vehicle: VehicleSummaryResponse): string {

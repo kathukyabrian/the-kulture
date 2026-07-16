@@ -6,15 +6,59 @@
     <path d="M94 760 C132 646 230 602 294 508 C330 455 344 380 372 326" fill="none" stroke="#ffb2bf" stroke-width="2" stroke-dasharray="5 8" stroke-linecap="round" />
   </svg>
 
-  <header class="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between border-b border-outline/50 bg-background/70 px-5 backdrop-blur-xl">
-    <button class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary shadow-neon" aria-label="Open menu">
-      <span class="material-symbols-outlined">menu</span>
+  <header class="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between border-b border-outline/50 bg-background/70 px-5 backdrop-blur-xl">
+    <button
+      type="button"
+      class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary shadow-neon"
+      aria-controls="main-menu"
+      [attr.aria-expanded]="menuOpen"
+      [attr.aria-label]="menuOpen ? 'Close menu' : 'Open menu'"
+      (click)="toggleMenu()"
+    >
+      <span class="material-symbols-outlined">{{ menuOpen ? 'close' : 'menu' }}</span>
     </button>
     <a routerLink="/" class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</a>
     <a routerLink="/crew" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Crew dashboard">
       <span class="material-symbols-outlined">person_pin_circle</span>
     </a>
   </header>
+
+  <button
+    *ngIf="menuOpen"
+    type="button"
+    class="fixed inset-0 z-30 cursor-default bg-background/25 backdrop-blur-[2px]"
+    aria-label="Close menu"
+    (click)="closeMenu()"
+  ></button>
+
+  <aside
+    *ngIf="menuOpen"
+    id="main-menu"
+    class="fixed left-5 top-20 z-40 w-[min(22rem,calc(100vw-2.5rem))] rounded border border-primary/30 bg-surface/95 p-3 shadow-neon backdrop-blur-xl"
+  >
+    <nav class="grid gap-2">
+      <a routerLink="/" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-primary/20 bg-surface-high/70 px-3 font-mono text-xs uppercase text-primary">
+        <span class="material-symbols-outlined">map</span>
+        <span>Live Map</span>
+      </a>
+      <a routerLink="/fleet" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
+        <span class="material-symbols-outlined text-secondary">monitoring</span>
+        <span>Fleet Overview</span>
+      </a>
+      <a routerLink="/crew" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
+        <span class="material-symbols-outlined text-tertiary">radio_button_checked</span>
+        <span>Crew Dashboard</span>
+      </a>
+      <a
+        [routerLink]="vehicles[0] ? ['/nganyas', vehicles[0].id] : ['/']"
+        (click)="closeMenu()"
+        class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink"
+      >
+        <span class="material-symbols-outlined text-primary">badge</span>
+        <span>{{ vehicles[0] ? vehicles[0].name : 'Nganya Profile' }}</span>
+      </a>
+    </nav>
+  </aside>
 
   <section class="fixed left-4 right-4 top-20 z-20 md:left-1/2 md:right-auto md:w-[520px] md:-translate-x-1/2">
     <label class="flex min-h-14 items-center gap-3 rounded border border-secondary/40 bg-surface/90 px-4 shadow-lime backdrop-blur-xl">
