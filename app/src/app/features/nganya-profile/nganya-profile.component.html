@@ -9,6 +9,10 @@
     </a>
   </header>
 
+  <p *ngIf="loading" class="mx-5 mt-5 rounded border border-outline bg-surface p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
+  <p *ngIf="error" class="mx-5 mt-5 rounded border border-danger/40 bg-surface p-4 font-mono text-xs uppercase text-danger">{{ error }}</p>
+
+  <ng-container *ngIf="vehicle as vehicle">
   <section class="relative min-h-[360px] overflow-hidden border-b border-outline">
     <div class="absolute inset-0 map-grid"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"></div>
@@ -48,12 +52,12 @@
     <div class="rounded-lg border border-secondary/20 bg-surface-high p-5 shadow-lime rim-light">
       <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Crew rating</p>
       <div class="mt-3 flex items-end justify-between">
-        <h3 class="font-display text-5xl font-black text-secondary">{{ rating }}</h3>
+        <h3 class="font-display text-5xl font-black text-secondary">{{ rating(vehicle) }}</h3>
         <span class="font-mono text-xs uppercase text-muted">Elite rank</span>
       </div>
       <div class="mt-5 space-y-3">
         <div *ngFor="let crew of vehicle.crew" class="flex items-center justify-between border-t border-outline/60 pt-3">
-          <span class="font-semibold">{{ crew.name }}</span>
+          <span class="font-semibold">{{ crew.displayName }}</span>
           <span class="font-mono text-xs uppercase text-muted">{{ crew.role }} · {{ crew.rating }}</span>
         </div>
       </div>
@@ -71,4 +75,5 @@
       </div>
     </div>
   </section>
+  </ng-container>
 </main>

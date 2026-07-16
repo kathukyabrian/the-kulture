@@ -9,13 +9,17 @@
     </a>
   </header>
 
+  <p *ngIf="loading" class="mx-auto mt-6 max-w-7xl rounded border border-outline bg-surface p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
+  <p *ngIf="error" class="mx-auto mt-6 max-w-7xl rounded border border-danger/40 bg-surface p-4 font-mono text-xs uppercase text-danger">{{ error }}</p>
+
+  <ng-container *ngIf="overview as overview">
   <section class="mx-auto grid max-w-7xl gap-4 px-5 py-6 md:grid-cols-3">
     <div class="rounded-lg bg-surface-high p-5 rim-light">
       <div class="flex items-center justify-between">
         <p class="font-mono text-sm uppercase text-secondary">Active Nganyas</p>
         <span class="material-symbols-outlined text-secondary">directions_bus</span>
       </div>
-      <p class="mt-5 font-display text-5xl font-black">{{ activeVehicles }}</p>
+      <p class="mt-5 font-display text-5xl font-black">{{ overview.activeVehicles }}</p>
       <p class="mt-1 text-sm text-secondary">+12% from last hour</p>
     </div>
     <div class="rounded-lg bg-surface-high p-5 rim-light">
@@ -23,15 +27,15 @@
         <p class="font-mono text-sm uppercase text-danger">Live Alerts</p>
         <span class="material-symbols-outlined text-danger">warning</span>
       </div>
-      <p class="mt-5 font-display text-5xl font-black">{{ alerts.length }}</p>
-      <p class="mt-1 text-sm text-muted">{{ pendingVerification }} pending verification</p>
+      <p class="mt-5 font-display text-5xl font-black">{{ overview.liveAlerts }}</p>
+      <p class="mt-1 text-sm text-muted">{{ overview.pendingVerification }} pending verification</p>
     </div>
     <div class="rounded-lg bg-surface-high p-5 rim-light">
       <div class="flex items-center justify-between">
         <p class="font-mono text-sm uppercase text-primary">Revenue KES</p>
         <span class="material-symbols-outlined text-primary">payments</span>
       </div>
-      <p class="mt-5 font-display text-5xl font-black">{{ projectedRevenue / 1000 | number:'1.1-1' }}K</p>
+      <p class="mt-5 font-display text-5xl font-black">{{ overview.projectedRevenue / 1000 | number:'1.1-1' }}K</p>
       <p class="mt-1 text-sm text-muted">Daily projected</p>
     </div>
   </section>
@@ -47,21 +51,22 @@
       </svg>
       <div class="absolute left-4 top-4 rounded border border-outline/60 bg-surface/80 p-3 backdrop-blur-xl">
         <p class="font-mono text-xs uppercase text-primary">Live Route Status</p>
-        <p class="mt-1 text-sm text-muted">Tracking {{ activeVehicles }} active routes</p>
+        <p class="mt-1 text-sm text-muted">Tracking {{ overview.activeVehicles }} active routes</p>
       </div>
     </div>
 
     <aside class="rounded-lg bg-surface p-4 md:col-span-4 rim-light">
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-display text-2xl font-black uppercase text-primary">Pending</h2>
-        <span class="rounded border border-primary/40 px-2 py-1 font-mono text-xs text-primary">{{ pendingVerification }} new</span>
+        <span class="rounded border border-primary/40 px-2 py-1 font-mono text-xs text-primary">{{ overview.pendingVerification }} new</span>
       </div>
       <div class="space-y-3">
-        <div *ngFor="let vehicle of vehicles" class="rounded border border-outline/60 bg-surface-high p-3" [class.hidden]="vehicle.verified">
+        <div *ngFor="let vehicle of pendingVehicles" class="rounded border border-outline/60 bg-surface-high p-3">
           <p class="font-mono text-sm font-bold text-ink">[ {{ vehicle.plateNumber }} ]</p>
-          <p class="mt-1 text-sm text-muted">{{ vehicle.name }} · {{ vehicle.route.name }}</p>
-          <button class="mt-3 min-h-10 w-full rounded bg-secondary font-mono text-xs uppercase text-[#003915] active:scale-[0.99]">Verify</button>
+          <p class="mt-1 text-sm text-muted">{{ vehicle.name }} · {{ vehicle.routeName }}</p>
+          <button (click)="verify(vehicle.id)" class="mt-3 min-h-10 w-full rounded bg-secondary font-mono text-xs uppercase text-[#003915] active:scale-[0.99]">Verify</button>
         </div>
+        <p *ngIf="pendingVehicles.length === 0" class="rounded border border-outline/60 bg-surface-high p-3 font-mono text-xs uppercase text-muted">No pending vehicles</p>
       </div>
     </aside>
 
@@ -78,11 +83,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let vehicle of vehicles" class="border-b border-outline/40">
-              <td class="py-4">{{ vehicle.crew[0].name }} / {{ vehicle.crew[1].name }}</td>
+            <tr *ngFor="let vehicle of overview.activeFleet" class="border-b border-outline/40">
+              <td class="py-4">{{ vehicle.status }}</td>
               <td class="font-mono text-sm">{{ vehicle.name }}</td>
-              <td class="font-mono text-sm">[ {{ vehicle.route.routeNumber }} ]</td>
-              <td class="text-right font-mono text-sm">{{ vehicle.earningsToday | number }}</td>
+              <td class="font-mono text-sm">[ {{ vehicle.routeNumber }} ]</td>
+              <td class="text-right font-mono text-sm">{{ vehicle.etaMinutes }} min</td>
             </tr>
           </tbody>
         </table>
@@ -95,7 +100,7 @@
         <div class="grid h-48 w-48 place-items-center rounded-full border-[18px] border-primary border-r-secondary border-b-tertiary shadow-neon">
           <div class="text-center">
             <p class="font-mono text-xs uppercase text-muted">Total</p>
-            <p class="font-display text-5xl font-black">{{ vehicles.length }}</p>
+            <p class="font-display text-5xl font-black">{{ overview.activeFleet.length + pendingVehicles.length }}</p>
           </div>
         </div>
       </div>
@@ -106,4 +111,5 @@
       </div>
     </section>
   </section>
+  </ng-container>
 </main>

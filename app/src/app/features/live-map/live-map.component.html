@@ -21,6 +21,7 @@
       <span class="material-symbols-outlined text-secondary">search</span>
       <input
         [(ngModel)]="query"
+        (ngModelChange)="onSearch($event)"
         class="h-12 min-w-0 flex-1 border-0 bg-transparent font-mono text-sm uppercase text-ink outline-none placeholder:text-muted/60 focus:ring-0"
         placeholder="SEARCH ROUTES"
         type="search"
@@ -40,7 +41,7 @@
   >
     <span class="relative block h-4 w-4 rounded-full bg-tertiary-strong live-ping"></span>
     <span class="mt-3 block whitespace-nowrap rounded border border-primary/40 bg-surface/85 px-2 py-1 font-mono text-xs uppercase text-primary backdrop-blur">
-      [ {{ vehicle.route.routeNumber }} ] {{ vehicle.name }}
+      [ {{ vehicle.routeNumber }} ] {{ vehicle.name }}
     </span>
   </a>
 
@@ -57,17 +58,19 @@
     </div>
 
     <div class="space-y-3">
+      <p *ngIf="loading" class="rounded border border-outline/60 bg-surface-high/60 p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
+      <p *ngIf="error" class="rounded border border-danger/40 bg-surface-high/60 p-4 font-mono text-xs uppercase text-danger">{{ error }}</p>
       <a
-        *ngFor="let vehicle of filteredVehicles"
+        *ngFor="let vehicle of vehicles"
         [routerLink]="['/nganyas', vehicle.id]"
         class="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg border border-outline/60 bg-surface-high/70 p-3 rim-light active:scale-[0.99]"
       >
         <div class="grid h-14 w-16 place-items-center rounded bg-background font-mono text-sm font-bold text-primary">
-          [ {{ vehicle.route.routeNumber }} ]
+          [ {{ vehicle.routeNumber }} ]
         </div>
         <div class="min-w-0">
           <h2 class="truncate font-display text-lg font-extrabold uppercase">{{ vehicle.name }}</h2>
-          <p class="truncate text-sm text-muted">{{ vehicle.route.origin }} to {{ vehicle.route.destination }} · {{ vehicle.plateNumber }}</p>
+          <p class="truncate text-sm text-muted">{{ vehicle.routeName }} to {{ vehicle.destination }} · {{ vehicle.plateNumber }}</p>
         </div>
         <div class="text-right">
           <span class="block font-mono text-xs uppercase" [ngClass]="vehicle.status === 'ONLINE' ? 'text-secondary' : 'text-tertiary'">{{ statusLabel(vehicle) }}</span>
@@ -80,7 +83,7 @@
   <nav class="fixed bottom-0 left-0 right-0 z-30 grid h-16 grid-cols-4 border-t border-outline bg-background/90 backdrop-blur-xl md:hidden">
     <a routerLink="/" class="grid place-items-center text-primary" aria-label="Map"><span class="material-symbols-outlined">map</span></a>
     <a routerLink="/fleet" class="grid place-items-center text-muted" aria-label="Fleet"><span class="material-symbols-outlined">directions_bus</span></a>
-    <a [routerLink]="['/nganyas', vehicles[0].id]" class="grid place-items-center text-muted" aria-label="Profile"><span class="material-symbols-outlined">badge</span></a>
+    <a [routerLink]="vehicles[0] ? ['/nganyas', vehicles[0].id] : ['/']" class="grid place-items-center text-muted" aria-label="Profile"><span class="material-symbols-outlined">badge</span></a>
     <a routerLink="/crew" class="grid place-items-center text-muted" aria-label="Crew"><span class="material-symbols-outlined">radio_button_checked</span></a>
   </nav>
 </main>

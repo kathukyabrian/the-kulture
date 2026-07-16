@@ -9,19 +9,24 @@
     </a>
   </header>
 
+  <p *ngIf="loading" class="mx-auto mt-6 max-w-3xl rounded border border-outline bg-surface p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
+  <p *ngIf="error" class="mx-auto mt-6 max-w-3xl rounded border border-danger/40 bg-surface p-4 font-mono text-xs uppercase text-danger">{{ error }}</p>
+
+  <ng-container *ngIf="vehicle as vehicle">
   <section class="mx-auto mt-6 max-w-3xl overflow-hidden rounded-xl border border-primary/20 bg-surface p-5 shadow-neon rim-light">
     <div class="relative min-h-56 rounded-lg bg-background p-5">
       <div class="absolute inset-0 map-grid opacity-50"></div>
       <div class="relative">
-        <p class="font-mono text-sm uppercase tracking-[0.16em] text-muted">Current status: {{ live ? 'Online' : 'Offline' }}</p>
+        <p class="font-mono text-sm uppercase tracking-[0.16em] text-muted">Current status: {{ vehicle.status }}</p>
         <button
           type="button"
           (click)="toggleLive()"
+          [disabled]="saving"
           class="mt-6 grid h-36 w-36 place-items-center rounded-full border-2 uppercase shadow-neon transition active:scale-95"
-          [ngClass]="live ? 'border-secondary bg-secondary text-[#003915] shadow-lime' : 'border-primary bg-surface-high text-primary'"
+          [ngClass]="vehicle.status === 'ONLINE' ? 'border-secondary bg-secondary text-[#003915] shadow-lime' : 'border-primary bg-surface-high text-primary'"
           aria-label="Toggle live tracking"
         >
-          <span class="font-display text-3xl font-black italic">{{ live ? 'LIVE' : 'GO LIVE' }}</span>
+          <span class="font-display text-3xl font-black italic">{{ saving ? 'SYNC' : (vehicle.status === 'ONLINE' ? 'LIVE' : 'GO LIVE') }}</span>
         </button>
       </div>
     </div>
@@ -73,9 +78,10 @@
     <div class="flex items-center justify-between p-4">
       <div>
         <p class="font-mono text-xs uppercase text-primary">Current Location</p>
-        <p class="text-sm text-muted">{{ vehicle.latitude }}, {{ vehicle.longitude }}</p>
+        <p class="text-sm text-muted">{{ vehicle.latestLocation?.latitude ?? 'N/A' }}, {{ vehicle.latestLocation?.longitude ?? 'N/A' }}</p>
       </div>
       <span class="rounded border border-secondary/40 px-3 py-2 font-mono text-xs uppercase text-secondary">{{ vehicle.occupancyStatus }}</span>
     </div>
   </section>
+  </ng-container>
 </main>

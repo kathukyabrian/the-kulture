@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { vehicles, VehicleInfo } from '../../core/demo-data';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
+import { VehicleSummaryResponse } from '../../core/api.models';
+import { KultureApiService } from '../../core/kulture-api.service';
 
 @Component({
   selector: 'app-live-map',
@@ -10,31 +12,65 @@ import { vehicles, VehicleInfo } from '../../core/demo-data';
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './live-map.component.html'
 })
-export class LiveMapComponent {
+export class LiveMapComponent implements OnInit {
   query = '';
-  readonly vehicles = vehicles;
+  vehicles: VehicleSummaryResponse[] = [];
+  loading = true;
+  error = '';
 
-  get filteredVehicles(): VehicleInfo[] {
-    const query = this.query.trim().toLowerCase();
-    if (!query) {
-      return this.vehicles;
-    }
-    return this.vehicles.filter((vehicle) => {
-      const target = [
-        vehicle.name,
-        vehicle.plateNumber,
-        vehicle.route.routeNumber,
-        vehicle.route.name,
-        vehicle.route.destination
-      ].join(' ').toLowerCase();
-      return target.includes(query);
-    });
+  private readonly searchTerms = new Subject<string>();
+
+  constructor(private readonly api: KultureApiService) {}
+
+  ngOnInit(): void {
+    this.loadVehicles();
+    this.searchTerms
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        tap(() => {
+          this.loading = true;
+          this.error = '';
+        }),
+        switchMap((query) => {
+          const trimmed = query.trim();
+          return (trimmed ? this.api.searchVehicles(trimmed) : this.api.getVehicles()).pipe(
+            catchError(() => {
+              this.error = 'Could not reach the backend API.';
+              return of([]);
+            })
+          );
+        })
+      )
+      .subscribe((vehicles) => {
+        this.vehicles = vehicles;
+        this.loading = false;
+      });
   }
 
-  statusLabel(vehicle: VehicleInfo): string {
+  onSearch(query: string): void {
+    this.searchTerms.next(query);
+  }
+
+  statusLabel(vehicle: VehicleSummaryResponse): string {
     if (vehicle.status === 'MAINTENANCE') {
       return 'Pit stop';
     }
     return vehicle.status === 'ONLINE' ? `${vehicle.etaMinutes} min` : 'Offline';
+  }
+
+  private loadVehicles(): void {
+    this.api
+      .getVehicles()
+      .pipe(
+        catchError(() => {
+          this.error = 'Could not reach the backend API.';
+          return of([]);
+        })
+      )
+      .subscribe((vehicles) => {
+        this.vehicles = vehicles;
+        this.loading = false;
+      });
   }
 }
