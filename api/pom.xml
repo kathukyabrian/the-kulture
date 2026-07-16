@@ -133,6 +133,29 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<from>
+						<image>registry.access.redhat.com/ubi9/openjdk-25:latest</image>
+					</from>
+					<to>
+						<image>kitunda/the-kulture-api</image>
+						<auth>
+							<!--suppress UnresolvedMavenProperty-->
+							<username>${DOCKER_REGISTRY_USER}</username>
+							<!--suppress UnresolvedMavenProperty-->
+							<password>${DOCKER_REGISTRY_PWD}</password>
+						</auth>
+						<tags>
+							<tag>latest</tag>
+							<tag>${version}</tag>
+						</tags>
+					</to>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
