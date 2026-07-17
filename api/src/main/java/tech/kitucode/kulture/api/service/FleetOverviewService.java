@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import tech.kitucode.kulture.api.domain.FleetAlertEntity;
-import tech.kitucode.kulture.api.domain.VehicleStatus;
+import tech.kitucode.kulture.api.domain.FleetAlert;
+import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 import tech.kitucode.kulture.api.repository.FleetAlertRepository;
 import tech.kitucode.kulture.api.repository.VehicleRepository;
 import tech.kitucode.kulture.api.web.rest.dto.FleetAlertResponse;
@@ -55,13 +55,13 @@ public class FleetOverviewService {
 
 	@Transactional
 	public FleetAlertResponse resolve(UUID alertId) {
-		FleetAlertEntity alert = alertRepository.findById(alertId)
+		FleetAlert alert = alertRepository.findById(alertId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alert not found"));
 		alert.resolve();
 		return toResponse(alert);
 	}
 
-	private FleetAlertResponse toResponse(FleetAlertEntity alert) {
+	private FleetAlertResponse toResponse(FleetAlert alert) {
 		return new FleetAlertResponse(
 			alert.getId(),
 			alert.getVehicle().getName(),

@@ -4,12 +4,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Data;
+
 import java.time.Instant;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "routes")
-public class RouteEntity {
+public class Route {
 
 	@Id
 	private UUID id;
@@ -37,43 +40,4 @@ public class RouteEntity {
 
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
-
-	protected RouteEntity() {
-	}
-
-	public UUID getId() {
-		return id;
-	}
-
-	public String getRouteNumber() {
-		return routeNumber;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getOrigin() {
-		return origin;
-	}
-
-	public String getDestination() {
-		return destination;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public Instant getUpdatedAt() {
-		return updatedAt;
-	}
 }

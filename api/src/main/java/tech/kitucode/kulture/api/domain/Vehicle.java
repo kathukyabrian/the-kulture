@@ -9,12 +9,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Data;
+import tech.kitucode.kulture.api.domain.enumerations.OccupancyStatus;
+import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
+
 import java.time.Instant;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "vehicles")
-public class VehicleEntity {
+public class Vehicle {
 
 	@Id
 	private UUID id;
@@ -27,7 +32,7 @@ public class VehicleEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "route_id", nullable = false)
-	private RouteEntity route;
+	private Route route;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -64,36 +69,10 @@ public class VehicleEntity {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
-	protected VehicleEntity() {
-	}
-
-	public UUID getId() {
-		return id;
-	}
-
-	public String getPlateNumber() {
-		return plateNumber;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public RouteEntity getRoute() {
-		return route;
-	}
-
-	public VehicleStatus getStatus() {
-		return status;
-	}
 
 	public void setStatus(VehicleStatus status) {
 		this.status = status;
 		this.updatedAt = Instant.now();
-	}
-
-	public OccupancyStatus getOccupancyStatus() {
-		return occupancyStatus;
 	}
 
 	public void setOccupancyStatus(OccupancyStatus occupancyStatus) {
@@ -101,44 +80,9 @@ public class VehicleEntity {
 		this.updatedAt = Instant.now();
 	}
 
-	public boolean isVerified() {
-		return verified;
-	}
 
 	public void verify() {
 		this.verified = true;
 		this.updatedAt = Instant.now();
-	}
-
-	public boolean isWifiAvailable() {
-		return wifiAvailable;
-	}
-
-	public int getBassLevel() {
-		return bassLevel;
-	}
-
-	public int getScreenCount() {
-		return screenCount;
-	}
-
-	public int getWatcherCount() {
-		return watcherCount;
-	}
-
-	public int getEarningsToday() {
-		return earningsToday;
-	}
-
-	public int getFleetPosition() {
-		return fleetPosition;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public Instant getUpdatedAt() {
-		return updatedAt;
 	}
 }

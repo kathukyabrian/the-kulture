@@ -9,20 +9,24 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Data;
+import tech.kitucode.kulture.api.domain.enumerations.CrewRole;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "crew_members")
-public class CrewMemberEntity {
+public class CrewMember {
 
 	@Id
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "vehicle_id", nullable = false)
-	private VehicleEntity vehicle;
+	private Vehicle vehicle;
 
 	@Column(name = "display_name", nullable = false)
 	private String displayName;
@@ -42,39 +46,4 @@ public class CrewMemberEntity {
 
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
-
-	protected CrewMemberEntity() {
-	}
-
-	public UUID getId() {
-		return id;
-	}
-
-	public VehicleEntity getVehicle() {
-		return vehicle;
-	}
-
-	public String getDisplayName() {
-		return displayName;
-	}
-
-	public CrewRole getRole() {
-		return role;
-	}
-
-	public BigDecimal getRating() {
-		return rating;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public Instant getUpdatedAt() {
-		return updatedAt;
-	}
 }

@@ -8,18 +8,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import tech.kitucode.kulture.api.domain.CrewMemberEntity;
-import tech.kitucode.kulture.api.domain.OccupancyStatus;
-import tech.kitucode.kulture.api.domain.VehicleEntity;
-import tech.kitucode.kulture.api.domain.VehicleLocationEntity;
-import tech.kitucode.kulture.api.domain.VehicleStatus;
+import tech.kitucode.kulture.api.domain.CrewMember;
+import tech.kitucode.kulture.api.domain.enumerations.OccupancyStatus;
+import tech.kitucode.kulture.api.domain.Vehicle;
+import tech.kitucode.kulture.api.domain.VehicleLocation;
+import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 import tech.kitucode.kulture.api.repository.CrewMemberRepository;
 import tech.kitucode.kulture.api.repository.VehicleLocationRepository;
 import tech.kitucode.kulture.api.repository.VehicleRepository;
 import tech.kitucode.kulture.api.web.rest.dto.CrewMemberResponse;
 import tech.kitucode.kulture.api.web.rest.dto.LocationResponse;
 import tech.kitucode.kulture.api.web.rest.dto.LocationUpdateRequest;
-import tech.kitucode.kulture.api.web.rest.dto.RouteResponse;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleDetailResponse;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleStatusUpdateRequest;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleSummaryResponse;
@@ -47,7 +46,7 @@ public class VehicleService {
 
 	public List<VehicleSummaryResponse> list() {
 		return vehicleRepository.findAll().stream()
-			.sorted(Comparator.comparing(VehicleEntity::getName))
+			.sorted(Comparator.comparing(Vehicle::getName))
 			.map(this::toSummary)
 			.toList();
 	}
@@ -69,7 +68,7 @@ public class VehicleService {
 	}
 
 	public VehicleDetailResponse get(UUID id) {
-		VehicleEntity vehicle = findById(id);
+		Vehicle vehicle = findById(id);
 		List<CrewMemberResponse> crew = crewMemberRepository.findByVehicleIdAndActiveTrueOrderByRoleAsc(id).stream()
 			.map(this::toCrewResponse)
 			.toList();
@@ -78,29 +77,29 @@ public class VehicleService {
 
 	@Transactional
 	public VehicleDetailResponse goLive(UUID vehicleId) {
-		VehicleEntity vehicle = findById(vehicleId);
+		Vehicle vehicle = findById(vehicleId);
 		vehicle.setStatus(VehicleStatus.ONLINE);
 		return get(vehicleId);
 	}
 
 	@Transactional
 	public VehicleDetailResponse goOffline(UUID vehicleId) {
-		VehicleEntity vehicle = findById(vehicleId);
+		Vehicle vehicle = findById(vehicleId);
 		vehicle.setStatus(VehicleStatus.OFFLINE);
 		return get(vehicleId);
 	}
 
 	@Transactional
 	public VehicleDetailResponse updateLocation(UUID vehicleId, LocationUpdateRequest request) {
-		VehicleEntity vehicle = findById(vehicleId);
+		Vehicle vehicle = findById(vehicleId);
 		vehicle.setStatus(VehicleStatus.ONLINE);
-		locationRepository.save(new VehicleLocationEntity(vehicle, request.latitude(), request.longitude(), request.speedKph()));
+		locationRepository.save(new VehicleLocation(vehicle, request.latitude(), request.longitude(), request.speedKph()));
 		return get(vehicleId);
 	}
 
 	@Transactional
 	public VehicleDetailResponse updateStatus(UUID vehicleId, VehicleStatusUpdateRequest request) {
-		VehicleEntity vehicle = findById(vehicleId);
+		Vehicle vehicle = findById(vehicleId);
 		vehicle.setStatus(parseVehicleStatus(request.status()));
 		vehicle.setOccupancyStatus(parseOccupancyStatus(request.occupancyStatus()));
 		return get(vehicleId);
@@ -108,7 +107,7 @@ public class VehicleService {
 
 	@Transactional
 	public VehicleDetailResponse verify(UUID vehicleId) {
-		VehicleEntity vehicle = findById(vehicleId);
+		Vehicle vehicle = findById(vehicleId);
 		vehicle.verify();
 		return get(vehicleId);
 	}
@@ -119,12 +118,12 @@ public class VehicleService {
 			.toList();
 	}
 
-	VehicleEntity findById(UUID id) {
+	Vehicle findById(UUID id) {
 		return vehicleRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
 	}
 
-	VehicleSummaryResponse toSummary(VehicleEntity vehicle) {
+	VehicleSummaryResponse toSummary(Vehicle vehicle) {
 		return new VehicleSummaryResponse(
 			vehicle.getId(),
 			vehicle.getPlateNumber(),
@@ -140,7 +139,7 @@ public class VehicleService {
 		);
 	}
 
-	private VehicleDetailResponse toDetail(VehicleEntity vehicle, List<CrewMemberResponse> crew) {
+	private VehicleDetailResponse toDetail(Vehicle vehicle, List<CrewMemberResponse> crew) {
 		return new VehicleDetailResponse(
 			vehicle.getId(),
 			vehicle.getPlateNumber(),
@@ -160,7 +159,7 @@ public class VehicleService {
 		);
 	}
 
-	private CrewMemberResponse toCrewResponse(CrewMemberEntity crewMember) {
+	private CrewMemberResponse toCrewResponse(CrewMember crewMember) {
 		return new CrewMemberResponse(
 			crewMember.getId(),
 			crewMember.getDisplayName(),
@@ -180,7 +179,7 @@ public class VehicleService {
 			.orElse(null);
 	}
 
-	private int etaFor(VehicleEntity vehicle) {
+	private int etaFor(Vehicle vehicle) {
 		return switch (vehicle.getStatus()) {
 			case ONLINE -> 3 + Math.abs(vehicle.getFleetPosition() % 8);
 			case MAINTENANCE -> 45;
@@ -188,7 +187,7 @@ public class VehicleService {
 		};
 	}
 
-	private double distanceScore(VehicleEntity vehicle, BigDecimal latitude, BigDecimal longitude) {
+	private double distanceScore(Vehicle vehicle, BigDecimal latitude, BigDecimal longitude) {
 		LocationResponse latest = latestLocation(vehicle.getId());
 		if (latest == null || latitude == null || longitude == null) {
 			return Double.MAX_VALUE;

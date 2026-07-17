@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-import tech.kitucode.kulture.api.domain.RouteEntity;
+import tech.kitucode.kulture.api.domain.Route;
 import tech.kitucode.kulture.api.repository.RouteRepository;
 import tech.kitucode.kulture.api.web.rest.dto.RouteResponse;
 
@@ -30,12 +30,12 @@ public class RouteService {
 		return toResponse(findById(id));
 	}
 
-	RouteEntity findById(UUID id) {
+	Route findById(UUID id) {
 		return routeRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Route not found"));
 	}
 
-	RouteResponse toResponse(RouteEntity route) {
+	RouteResponse toResponse(Route route) {
 		return new RouteResponse(
 			route.getId(),
 			route.getRouteNumber(),

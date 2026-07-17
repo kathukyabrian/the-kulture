@@ -5,14 +5,14 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import tech.kitucode.kulture.api.domain.VehicleEntity;
-import tech.kitucode.kulture.api.domain.VehicleStatus;
+import tech.kitucode.kulture.api.domain.Vehicle;
+import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 
-public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
+public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
-	List<VehicleEntity> findByStatusOrderByNameAsc(VehicleStatus status);
+	List<Vehicle> findByStatusOrderByNameAsc(VehicleStatus status);
 
-	List<VehicleEntity> findByVerifiedFalseOrderByUpdatedAtDesc();
+	List<Vehicle> findByVerifiedFalseOrderByUpdatedAtDesc();
 
 	long countByStatus(VehicleStatus status);
 
@@ -28,5 +28,5 @@ public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
 		   or lower(r.destination) like lower(concat('%', :query, '%'))
 		order by v.name asc
 		""")
-	List<VehicleEntity> search(@Param("query") String query);
+	List<Vehicle> search(@Param("query") String query);
 }

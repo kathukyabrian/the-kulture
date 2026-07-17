@@ -7,20 +7,25 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "vehicle_locations")
-public class VehicleLocationEntity {
+public class VehicleLocation {
 
 	@Id
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "vehicle_id", nullable = false)
-	private VehicleEntity vehicle;
+	private Vehicle vehicle;
 
 	@Column(nullable = false)
 	private BigDecimal latitude;
@@ -34,10 +39,7 @@ public class VehicleLocationEntity {
 	@Column(name = "recorded_at", nullable = false)
 	private Instant recordedAt;
 
-	protected VehicleLocationEntity() {
-	}
-
-	public VehicleLocationEntity(VehicleEntity vehicle, BigDecimal latitude, BigDecimal longitude, int speedKph) {
+	public VehicleLocation(Vehicle vehicle, BigDecimal latitude, BigDecimal longitude, int speedKph) {
 		this.id = UUID.randomUUID();
 		this.vehicle = vehicle;
 		this.latitude = latitude;
@@ -46,27 +48,4 @@ public class VehicleLocationEntity {
 		this.recordedAt = Instant.now();
 	}
 
-	public UUID getId() {
-		return id;
-	}
-
-	public VehicleEntity getVehicle() {
-		return vehicle;
-	}
-
-	public BigDecimal getLatitude() {
-		return latitude;
-	}
-
-	public BigDecimal getLongitude() {
-		return longitude;
-	}
-
-	public int getSpeedKph() {
-		return speedKph;
-	}
-
-	public Instant getRecordedAt() {
-		return recordedAt;
-	}
 }

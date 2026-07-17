@@ -3,9 +3,9 @@ package tech.kitucode.kulture.api.repository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-import tech.kitucode.kulture.api.domain.CrewMemberEntity;
+import tech.kitucode.kulture.api.domain.CrewMember;
 
-public interface CrewMemberRepository extends JpaRepository<CrewMemberEntity, UUID> {
+public interface CrewMemberRepository extends JpaRepository<CrewMember, UUID> {
 
-	List<CrewMemberEntity> findByVehicleIdAndActiveTrueOrderByRoleAsc(UUID vehicleId);
+	List<CrewMember> findByVehicleIdAndActiveTrueOrderByRoleAsc(UUID vehicleId);
 }

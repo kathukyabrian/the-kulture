@@ -1,4 +1,4 @@
-package tech.kitucode.kulture.api.domain;
+package tech.kitucode.kulture.api.domain.enumerations;
 
 public enum AlertSeverity {
 	INFO,
