@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changes/005-media.yaml
   - include:
       file: db/changelog/changes/006-remove-alerts.yaml
+  - include:
+      file: db/changelog/changes/007-users-and-crew-assignments.yaml

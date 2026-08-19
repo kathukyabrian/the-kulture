@@ -1,0 +1,66 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-users-and-crew-assignments
+      author: codex
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: name, type: varchar(120), constraints: { nullable: false } }
+              - column: { name: email, type: varchar(255), constraints: { nullable: false, unique: true } }
+              - column: { name: phone_number, type: varchar(30), constraints: { unique: true } }
+              - column: { name: account_role, type: varchar(30), constraints: { nullable: false } }
+              - column: { name: password_hash, type: varchar(255) }
+              - column: { name: status, type: varchar(30), constraints: { nullable: false } }
+              - column: { name: email_verified_at, type: timestamp with time zone }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createTable:
+            tableName: crew_assignments
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: vehicle_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: crew_role, type: varchar(30), constraints: { nullable: false } }
+              - column: { name: rating, type: "numeric(2,1)", constraints: { nullable: false } }
+              - column: { name: started_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: ended_at, type: timestamp with time zone }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addForeignKeyConstraint: { baseTableName: crew_assignments, baseColumnNames: user_id, referencedTableName: users, referencedColumnNames: id, constraintName: fk_crew_assignments_user }
+        - addForeignKeyConstraint: { baseTableName: crew_assignments, baseColumnNames: vehicle_id, referencedTableName: vehicles, referencedColumnNames: id, constraintName: fk_crew_assignments_vehicle }
+        - createIndex:
+            tableName: crew_assignments
+            indexName: idx_crew_assignments_user_active
+            columns:
+              - column: { name: user_id }
+              - column: { name: ended_at }
+        - createTable:
+            tableName: password_setup_tokens
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: user_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: token_hash, type: varchar(64), constraints: { nullable: false, unique: true } }
+              - column: { name: expires_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: used_at, type: timestamp with time zone }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addForeignKeyConstraint: { baseTableName: password_setup_tokens, baseColumnNames: user_id, referencedTableName: users, referencedColumnNames: id, constraintName: fk_password_setup_tokens_user, onDelete: CASCADE }
+        - sql:
+            sql: |
+              INSERT INTO users (id, name, email, phone_number, account_role, password_hash, status, email_verified_at, created_at, updated_at)
+              SELECT id, display_name, CONCAT('legacy+', id, '@kulture.invalid'), NULL, 'CREW', NULL, 'INVITED', NULL, created_at, updated_at
+              FROM crew_members;
+              INSERT INTO crew_assignments (id, user_id, vehicle_id, crew_role, rating, started_at, ended_at, created_at, updated_at)
+              SELECT id, id, vehicle_id, role, rating, created_at, CASE WHEN active THEN NULL ELSE updated_at END, created_at, updated_at
+              FROM crew_members;
+        - dropTable:
+            tableName: crew_members
+            cascadeConstraints: true
+  - changeSet:
+      id: 007-active-assignment-constraint
+      author: codex
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: CREATE UNIQUE INDEX uq_crew_assignments_active_user ON crew_assignments (user_id) WHERE ended_at IS NULL

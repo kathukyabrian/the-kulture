@@ -92,10 +92,15 @@ export interface VehicleAdminUpdateRequest {
 }
 
 export interface CrewAdminRequest {
-  displayName: string;
+  userId: string;
   role: 'DRIVER' | 'CONDUCTOR';
-  rating: number;
 }
+
+export type AccountRole = 'ADMIN' | 'CREW' | 'TRAVELLER';
+export type UserStatus = 'INVITED' | 'ACTIVE' | 'SUSPENDED';
+export interface UserResponse { id: string; name: string; email: string; phoneNumber: string | null; role: AccountRole; status: UserStatus; assignmentId: string | null; vehicleId: string | null; vehicleName: string | null; assignmentRole: 'DRIVER' | 'CONDUCTOR' | null; createdAt: string; }
+export interface AuthUserResponse { id: string; displayName: string; email: string; role: 'admin' | 'crew' | 'traveller'; }
+export interface CrewContextResponse { user: AuthUserResponse; assignment: { id: string; role: 'DRIVER' | 'CONDUCTOR'; startedAt: string } | null; vehicle: VehicleDetailResponse | null; }
 
 export interface PageResponse<T> {
   items: T[];

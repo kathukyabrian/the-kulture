@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -17,9 +19,16 @@ public class SecurityConfiguration {
 		return http
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(csrf -> csrf.disable())
-			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+			.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/password/setup", "/api/auth/password/forgot", "/api/auth/password/reset", "/api/routes/**", "/api/vehicles/**", "/api/media/**").permitAll()
+				.requestMatchers("/api/admin/**").hasRole("ADMIN")
+				.requestMatchers("/api/crew/**").hasRole("CREW")
+				.anyRequest().authenticated())
+			.exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> response.sendError(401)))
 			.build();
 	}
+
+	@Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
@@ -27,6 +36,7 @@ public class SecurityConfiguration {
 		configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://127.0.0.1:4200"));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowCredentials(true);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/api/**", configuration);

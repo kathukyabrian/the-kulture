@@ -14,6 +14,7 @@ export class LoginComponent {
   email = '';
   password = '';
   error = '';
+  loading = false;
 
   constructor(
     readonly auth: AuthService,
@@ -22,12 +23,12 @@ export class LoginComponent {
   ) {}
 
   submit(): void {
-    const user = this.auth.login(this.email, this.password);
-    if (!user) {
-      this.error = 'The email or access code is incorrect.';
-      return;
-    }
-    this.router.navigateByUrl(this.redirectPath(user.role));
+    this.loading = true;
+    this.error = '';
+    this.auth.login(this.email, this.password).subscribe({
+      next: (user) => { this.loading = false; this.router.navigateByUrl(this.redirectPath(user.role)); },
+      error: () => { this.loading = false; this.error = 'The email or password is incorrect.'; }
+    });
   }
 
   private redirectPath(role: UserRole): string {

@@ -1,78 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { catchError, of, switchMap } from 'rxjs';
-import { VehicleDetailResponse } from '../../core/api.models';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { CrewContextResponse, MediaResponse, OccupancyStatus, VehicleSummaryResponse } from '../../core/api.models';
 import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
 import { ConfirmationService } from '../../core/confirmation.service';
 
-@Component({
-  selector: 'app-crew-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './crew-dashboard.component.html'
-})
-export class CrewDashboardComponent implements OnInit {
-  vehicle: VehicleDetailResponse | null = null;
-  loading = true;
-  saving = false;
-  error = '';
+@Component({ selector: 'app-crew-dashboard', standalone: true, imports: [CommonModule, FormsModule, RouterLink], templateUrl: './crew-dashboard.component.html', styleUrl: './crew-dashboard.component.css' })
+export class CrewDashboardComponent implements OnInit, OnDestroy {
+  @Input() initialTab: 'dashboard' | 'my-nganya' | 'nganyas' = 'dashboard';
+  context: CrewContextResponse | null = null; images: MediaResponse[] = []; vehicles: VehicleSummaryResponse[] = []; query = '';
+  loading = true; saving = false; error = ''; sharingLocation = false; locationMessage = ''; private watchId: number | null = null; private lastLocationSentAt = 0;
+  constructor(private readonly api: KultureApiService, private readonly auth: AuthService, private readonly router: Router, private readonly confirmation: ConfirmationService) {}
+  ngOnInit(): void { this.loadContext(); if (this.initialTab === 'nganyas') this.loadVehicles(); }
+  ngOnDestroy(): void { this.stopLocationSharing(); }
 
-  constructor(
-    private readonly api: KultureApiService,
-    private readonly auth: AuthService,
-    private readonly router: Router,
-    private readonly confirmation: ConfirmationService
-  ) {}
+  loadContext(): void { this.loading = true; this.error = ''; this.api.getCrewContext().subscribe({ next: (context) => { this.context = context; this.loading = false; if (this.initialTab === 'my-nganya' && context.vehicle) this.api.getVehicleImages(context.vehicle.id).subscribe({ next: (images) => this.images = images, error: () => this.images = [] }); }, error: (response) => { this.loading = false; this.error = response.status === 403 ? 'Your crew account is not active.' : 'Could not load your crew account.'; } }); }
+  loadVehicles(): void { const request = this.query.trim() ? this.api.searchVehicles(this.query.trim()) : this.api.getVehicles(); request.subscribe({ next: (vehicles) => this.vehicles = vehicles, error: () => this.error = 'Could not load nganyas.' }); }
 
-  ngOnInit(): void {
-    this.api
-      .getVehicles()
-      .pipe(
-        switchMap((vehicles) => {
-          const firstVehicle = vehicles[0];
-          if (!firstVehicle) {
-            this.error = 'No vehicles are available from the backend.';
-            return of(null);
-          }
-          return this.api.getVehicle(firstVehicle.id);
-        }),
-        catchError(() => {
-          this.error = 'Could not reach the backend API.';
-          return of(null);
-        })
-      )
-      .subscribe((vehicle) => {
-        this.vehicle = vehicle;
-        this.loading = false;
-      });
-  }
+  async setOnline(online: boolean): Promise<void> { const vehicle = this.context?.vehicle; if (!vehicle || this.saving) return; const confirmed = await this.confirmation.confirm({ title: online ? 'Go online?' : 'Go offline?', message: online ? `${vehicle.name} will become visible for live tracking.` : `${vehicle.name} will stop live tracking.`, confirmLabel: online ? 'Go online' : 'Go offline' }); if (!confirmed) return; this.saving = true; this.error = ''; const request = online ? this.api.goLive(vehicle.id) : this.api.goOffline(vehicle.id); request.subscribe({ next: () => { this.saving = false; if (!online) this.stopLocationSharing(); this.loadContext(); }, error: (response) => { this.saving = false; this.error = response.status === 403 ? 'You are no longer assigned to this nganya.' : 'Could not update the nganya status.'; this.loadContext(); } }); }
+  async enterMaintenance(): Promise<void> { const vehicle = this.context?.vehicle; if (!vehicle || this.saving || vehicle.status === 'MAINTENANCE') return; const confirmed = await this.confirmation.confirm({ title: 'Enter maintenance mode?', message: `${vehicle.name} will be marked as under maintenance and removed from live tracking.`, confirmLabel: 'Enter maintenance' }); if (!confirmed) return; this.saving = true; this.error = ''; this.api.updateVehicleStatus(vehicle.id, 'MAINTENANCE', vehicle.occupancyStatus).subscribe({ next: () => { this.saving = false; this.stopLocationSharing(); this.loadContext(); }, error: (response) => { this.saving = false; this.error = response.status === 403 ? 'You are no longer assigned to this nganya.' : 'Could not enter maintenance mode.'; this.loadContext(); } }); }
+  setOccupancy(occupancy: OccupancyStatus): void { const vehicle = this.context?.vehicle; if (!vehicle || this.saving || vehicle.occupancyStatus === occupancy) return; this.saving = true; this.api.updateOccupancy(vehicle.id, occupancy).subscribe({ next: () => { this.saving = false; this.loadContext(); }, error: () => { this.saving = false; this.error = 'Could not update occupancy.'; } }); }
 
-  async toggleLive(): Promise<void> {
-    if (!this.vehicle) {
-      return;
-    }
-    const action = this.vehicle.status === 'ONLINE' ? 'take this nganya offline' : 'make this nganya live';
-    if (!(await this.confirmation.confirm({ title: 'Change live status?', message: `This will ${action}.`, confirmLabel: 'Continue' }))) return;
-    this.saving = true;
-    const request = this.vehicle.status === 'ONLINE' ? this.api.goOffline(this.vehicle.id) : this.api.goLive(this.vehicle.id);
-    request
-      .pipe(
-        catchError(() => {
-          this.error = 'Could not update live status.';
-          return of(this.vehicle);
-        })
-      )
-      .subscribe((vehicle) => {
-        this.vehicle = vehicle;
-        this.saving = false;
-      });
-  }
-
-  async logout(): Promise<void> {
-    if (!(await this.confirmation.confirm({ title: 'Sign out?', message: 'You will need to enter your access details to return.', confirmLabel: 'Sign out' }))) return;
-    this.auth.logout();
-    this.router.navigateByUrl('/login');
-  }
+  async startLocationSharing(): Promise<void> { const vehicle = this.context?.vehicle; if (!vehicle || this.sharingLocation) return; if (!navigator.geolocation) { this.locationMessage = 'Location sharing is not supported by this browser.'; return; } const confirmed = await this.confirmation.confirm({ title: 'Share live location?', message: 'The Kulture will send this device location for your assigned nganya until you stop sharing, go offline, sign out, or leave this page.', confirmLabel: 'Allow location' }); if (!confirmed) return; this.locationMessage = 'Waiting for location permission...'; this.watchId = navigator.geolocation.watchPosition((position) => this.onPosition(position), (error) => { this.sharingLocation = false; this.watchId = null; this.locationMessage = error.code === error.PERMISSION_DENIED ? 'Location permission was denied.' : 'Location is currently unavailable.'; }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }); this.sharingLocation = true; this.locationMessage = 'Location sharing is active.'; }
+  stopLocationSharing(): void { if (this.watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(this.watchId); this.watchId = null; if (this.sharingLocation) this.locationMessage = 'Location sharing stopped.'; this.sharingLocation = false; }
+  isLocationStale(): boolean { const recordedAt = this.context?.vehicle?.latestLocation?.recordedAt; return !!recordedAt && Date.now() - new Date(recordedAt).getTime() > 5 * 60 * 1000; }
+  private onPosition(position: GeolocationPosition): void { const vehicle = this.context?.vehicle; if (!vehicle || Date.now() - this.lastLocationSentAt < 15000) return; this.lastLocationSentAt = Date.now(); const speedKph = Math.max(0, Math.min(160, Math.round((position.coords.speed ?? 0) * 3.6))); this.api.updateLocation(vehicle.id, position.coords.latitude, position.coords.longitude, speedKph).subscribe({ next: () => { this.locationMessage = 'Location sharing is active.'; this.loadContext(); }, error: () => this.locationMessage = 'Could not send the latest location.' }); }
+  async logout(): Promise<void> { if (!(await this.confirmation.confirm({ title: 'Sign out?', message: 'Location sharing will stop and you will need to sign in again.', confirmLabel: 'Sign out' }))) return; this.stopLocationSharing(); this.auth.logout(); this.router.navigateByUrl('/login'); }
 }

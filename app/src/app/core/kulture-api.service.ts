@@ -7,7 +7,7 @@ import {
   OccupancyStatus,
   VehicleSummaryResponse
 } from './api.models';
-import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse } from './api.models';
+import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse } from './api.models';
 
 @Injectable({ providedIn: 'root' })
 export class KultureApiService {
@@ -75,6 +75,14 @@ export class KultureApiService {
     return this.http.put<RouteResponse>(`${this.baseUrl}/admin/routes/${routeId}`, request);
   }
 
+  getAdminUsers(query: string, role: AccountRole | '', status: UserStatus | '', assignmentRole: string, page: number, size: number) { return this.http.get<PageResponse<UserResponse>>(`${this.baseUrl}/admin/users`, { params: { q: query, role, status, assignmentRole, page, size } }); }
+  findUserByPhone(phone: string) { return this.http.get<UserResponse>(`${this.baseUrl}/admin/users/by-phone`, { params: { phone } }); }
+  inviteCrew(request: { name: string; email: string; phoneNumber: string }) { return this.http.post<UserResponse>(`${this.baseUrl}/admin/users/invite-crew`, request); }
+  assignCrew(vehicleId: string, request: { userId: string; role: 'DRIVER' | 'CONDUCTOR'; confirmMove: boolean }) { return this.http.post<UserResponse>(`${this.baseUrl}/admin/vehicles/${vehicleId}/crew`, request); }
+  endCrewAssignment(assignmentId: string) { return this.http.delete<void>(`${this.baseUrl}/admin/crew-assignments/${assignmentId}`); }
+  resendInvitation(userId: string) { return this.http.post<UserResponse>(`${this.baseUrl}/admin/users/${userId}/resend-invitation`, {}); }
+  updateUserStatus(userId: string, status: UserStatus) { return this.http.patch<UserResponse>(`${this.baseUrl}/admin/users/${userId}/status`, { status }); }
+
   getVehicleImages(vehicleId: string) { return this.http.get<MediaResponse[]>(`${this.baseUrl}/vehicles/${vehicleId}/images`); }
   getAdminVehicleImages(vehicleId: string) { return this.http.get<MediaResponse[]>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images`); }
   uploadVehicleImage(vehicleId: string, file: File) { const body = new FormData(); body.append('file', file); return this.http.post<MediaResponse>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images`, body); }
@@ -83,6 +91,11 @@ export class KultureApiService {
   goLive(vehicleId: string) {
     return this.http.post<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles/${vehicleId}/go-live`, {});
   }
+
+  getAssignedCrewVehicle() { return this.http.get<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles`); }
+  getCrewContext() { return this.http.get<CrewContextResponse>(`${this.baseUrl}/crew/me`); }
+  updateOccupancy(vehicleId: string, occupancyStatus: OccupancyStatus) { return this.http.patch<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles/${vehicleId}/occupancy`, { occupancyStatus }); }
+  updateLocation(vehicleId: string, latitude: number, longitude: number, speedKph: number) { return this.http.post<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles/${vehicleId}/location`, { latitude, longitude, speedKph }); }
 
   goOffline(vehicleId: string) {
     return this.http.post<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles/${vehicleId}/go-offline`, {});

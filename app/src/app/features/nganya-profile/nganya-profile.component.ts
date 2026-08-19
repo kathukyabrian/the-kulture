@@ -19,6 +19,7 @@ export class NganyaProfileComponent implements OnInit {
   error = '';
   images: MediaResponse[] = [];
   readonly adminPreview: boolean;
+  readonly crewPreview: boolean;
   readonly backPath: string;
 
   constructor(
@@ -29,7 +30,8 @@ export class NganyaProfileComponent implements OnInit {
     private readonly confirmation: ConfirmationService
   ) {
     this.adminPreview = this.route.snapshot.data['adminPreview'] === true;
-    this.backPath = this.adminPreview ? '/fleet' : '/';
+    this.crewPreview = this.route.snapshot.data['crewPreview'] === true;
+    this.backPath = this.adminPreview ? '/fleet' : this.crewPreview ? '/crew/nganyas' : '/';
   }
 
   ngOnInit(): void {

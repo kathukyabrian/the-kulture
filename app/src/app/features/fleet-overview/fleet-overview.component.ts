@@ -3,24 +3,25 @@ import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { FleetOverviewResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, VehicleDetailResponse, MediaResponse, VehicleSummaryResponse } from '../../core/api.models';
+import { FleetOverviewResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, VehicleDetailResponse, MediaResponse, VehicleSummaryResponse, UserResponse } from '../../core/api.models';
 import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
 import { ConfirmationService } from '../../core/confirmation.service';
 import { AdminDashboardPageComponent } from './pages/admin-dashboard-page.component';
 import { AdminNganyasPageComponent } from './pages/admin-nganyas-page.component';
 import { AdminRoutesPageComponent } from './pages/admin-routes-page.component';
+import { AdminUsersPageComponent } from './pages/admin-users-page.component';
 
 @Component({
   selector: 'app-fleet-overview',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AdminDashboardPageComponent, AdminNganyasPageComponent, AdminRoutesPageComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminDashboardPageComponent, AdminNganyasPageComponent, AdminRoutesPageComponent, AdminUsersPageComponent],
   templateUrl: './fleet-overview.component.html',
   styleUrl: './fleet-overview.component.scss'
 })
 export class FleetOverviewComponent implements OnInit {
-  @Input() initialTab: 'dashboard' | 'nganyas' | 'routes' = 'dashboard';
-  adminTab: 'dashboard' | 'nganyas' | 'routes' = 'dashboard';
+  @Input() initialTab: 'dashboard' | 'nganyas' | 'routes' | 'users' = 'dashboard';
+  adminTab: 'dashboard' | 'nganyas' | 'routes' | 'users' = 'dashboard';
   overview: FleetOverviewResponse | null = null;
   pendingVehicles: VehicleSummaryResponse[] = [];
   vehicles: VehicleSummaryResponse[] = [];
@@ -40,6 +41,12 @@ export class FleetOverviewComponent implements OnInit {
   editForm: VehicleAdminUpdateRequest | null = null;
   routePickerQuery = '';
   routePickerOpen = false;
+  crewPhone = '';
+  crewInvite = { name: '', email: '', phoneNumber: '' };
+  crewRole: 'DRIVER' | 'CONDUCTOR' = 'DRIVER';
+  foundCrewUser: UserResponse | null = null;
+  showCrewInvite = false;
+  pendingCrew: { user: UserResponse; role: 'DRIVER' | 'CONDUCTOR' }[] = [];
   searchQuery = '';
   vehiclePage = 1;
   vehicleTotal = 0;
@@ -102,6 +109,8 @@ export class FleetOverviewComponent implements OnInit {
 
   editVehicle(vehicleId: string): void {
     this.error = '';
+    this.pendingCrew = [];
+    this.resetCrewPicker();
     this.api.getAdminVehicle(vehicleId).subscribe({
       next: (vehicle) => {
         this.editing = vehicle;
@@ -117,7 +126,7 @@ export class FleetOverviewComponent implements OnInit {
           screenCount: vehicle.screenCount,
           soundSystem: vehicle.soundSystem,
           customFeatures: vehicle.customFeatures,
-          crew: vehicle.crew.map((member) => ({ displayName: member.displayName, role: member.role, rating: member.rating }))
+          crew: []
         };
         this.routePickerQuery = this.routeLabel(vehicle.route);
         this.routePickerOpen = false;
@@ -135,6 +144,8 @@ export class FleetOverviewComponent implements OnInit {
     }
     this.editing = null;
     this.vehicleImages = [];
+    this.pendingCrew = [];
+    this.resetCrewPicker();
     this.editForm = {
       name: '',
       plateNumber: '',
@@ -178,21 +189,43 @@ export class FleetOverviewComponent implements OnInit {
     this.routePickerOpen = false;
   }
 
-  addCrewMember(): void {
-    this.editForm?.crew.push({ displayName: '', role: 'DRIVER', rating: 0 });
+  findCrewUser(): void {
+    if (!this.crewPhone.trim()) return;
+    this.error = '';
+    this.api.findUserByPhone(this.crewPhone).subscribe({
+      next: (user) => { this.foundCrewUser = user; this.showCrewInvite = false; },
+      error: (response) => { this.foundCrewUser = null; this.showCrewInvite = response.status === 404; this.crewInvite = { name: '', email: '', phoneNumber: this.crewPhone }; if (response.status !== 404) this.error = 'Use a valid Kenyan mobile number.'; }
+    });
   }
 
-  async removeCrewMember(index: number): Promise<void> {
-    const member = this.editForm?.crew[index];
-    if (!(await this.confirmation.confirm({ title: 'Remove crew member?', message: `${member?.displayName || 'This crew member'} will be removed when you save the profile.`, confirmLabel: 'Remove' }))) return;
-    this.editForm?.crew.splice(index, 1);
+  inviteAndAssignCrew(): void {
+    this.api.inviteCrew(this.crewInvite).subscribe({ next: (user) => { this.foundCrewUser = user; this.showCrewInvite = false; this.assignCrewUser(); }, error: () => this.error = 'Could not create this crew account.' });
   }
+
+  async assignCrewUser(): Promise<void> {
+    const user = this.foundCrewUser; if (!user) return;
+    let confirmMove = false;
+    if (user.vehicleId && user.vehicleId !== this.editing?.id) confirmMove = await this.confirmation.confirm({ title: 'Move crew member?', message: `${user.name} is assigned to ${user.vehicleName}. Move them to this nganya?`, confirmLabel: 'Move' });
+    if (user.vehicleId && user.vehicleId !== this.editing?.id && !confirmMove) return;
+    if (!this.editing) { this.pendingCrew = [...this.pendingCrew.filter((item) => item.user.id !== user.id), { user, role: this.crewRole }]; this.resetCrewPicker(); return; }
+    this.api.assignCrew(this.editing.id, { userId: user.id, role: this.crewRole, confirmMove }).subscribe({ next: () => { this.resetCrewPicker(); this.editVehicle(this.editing!.id); }, error: () => this.error = 'Could not assign this crew member.' });
+  }
+
+  async removeCrewMember(assignmentId: string, displayName: string): Promise<void> {
+    if (!(await this.confirmation.confirm({ title: 'Remove crew member?', message: `${displayName} will become unassigned but their account will remain active.`, confirmLabel: 'Remove' }))) return;
+    this.api.endCrewAssignment(assignmentId).subscribe({ next: () => this.editVehicle(this.editing!.id), error: () => this.error = 'Could not remove this crew member.' });
+  }
+
+  removePendingCrew(userId: string): void { this.pendingCrew = this.pendingCrew.filter((item) => item.user.id !== userId); }
+  private resetCrewPicker(): void { this.crewPhone = ''; this.foundCrewUser = null; this.showCrewInvite = false; this.crewInvite = { name: '', email: '', phoneNumber: '' }; }
 
   cancelEdit(): void {
     this.editing = null;
     this.editForm = null;
     this.routePickerQuery = '';
     this.routePickerOpen = false;
+    this.pendingCrew = [];
+    this.resetCrewPicker();
     this.vehicleImages = [];
   }
 
@@ -229,10 +262,12 @@ export class FleetOverviewComponent implements OnInit {
       ? this.api.updateVehicle(this.editing.id, this.editForm)
       : this.api.createVehicle(this.editForm);
     request.subscribe({
-      next: () => {
+      next: (vehicle) => {
         this.saving = false;
         if (isCreating) {
-          window.location.reload();
+          if (this.pendingCrew.length) {
+            forkJoin(this.pendingCrew.map((item) => this.api.assignCrew(vehicle.id, { userId: item.user.id, role: item.role, confirmMove: true }))).subscribe({ next: () => window.location.reload(), error: () => { this.error = 'Nganya created, but one or more crew assignments failed.'; } });
+          } else window.location.reload();
           return;
         }
         this.cancelEdit();
@@ -279,6 +314,7 @@ export class FleetOverviewComponent implements OnInit {
       this.loadRoutePage();
       return;
     }
+    this.loading = false;
   }
 
   private loadVehiclePage(): void {

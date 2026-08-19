@@ -10,14 +10,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import tech.kitucode.kulture.api.domain.CrewMember;
+import tech.kitucode.kulture.api.domain.CrewAssignment;
 import tech.kitucode.kulture.api.domain.enumerations.OccupancyStatus;
 import tech.kitucode.kulture.api.domain.Vehicle;
 import tech.kitucode.kulture.api.domain.VehicleLocation;
 import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 import tech.kitucode.kulture.api.domain.enumerations.ListingState;
-import tech.kitucode.kulture.api.domain.enumerations.CrewRole;
-import tech.kitucode.kulture.api.repository.CrewMemberRepository;
+import tech.kitucode.kulture.api.repository.CrewAssignmentRepository;
 import tech.kitucode.kulture.api.repository.VehicleLocationRepository;
 import tech.kitucode.kulture.api.repository.VehicleRepository;
 import tech.kitucode.kulture.api.web.rest.dto.CrewMemberResponse;
@@ -35,18 +34,18 @@ public class VehicleService {
 
 	private final VehicleRepository vehicleRepository;
 	private final VehicleLocationRepository locationRepository;
-	private final CrewMemberRepository crewMemberRepository;
+	private final CrewAssignmentRepository crewAssignmentRepository;
 	private final RouteService routeService;
 
 	public VehicleService(
 		VehicleRepository vehicleRepository,
 		VehicleLocationRepository locationRepository,
-		CrewMemberRepository crewMemberRepository,
+		CrewAssignmentRepository crewAssignmentRepository,
 		RouteService routeService
 	) {
 		this.vehicleRepository = vehicleRepository;
 		this.locationRepository = locationRepository;
-		this.crewMemberRepository = crewMemberRepository;
+		this.crewAssignmentRepository = crewAssignmentRepository;
 		this.routeService = routeService;
 	}
 
@@ -93,7 +92,7 @@ public class VehicleService {
 
 	private VehicleDetailResponse toDetailResponse(Vehicle vehicle) {
 		UUID id = vehicle.getId();
-		List<CrewMemberResponse> crew = crewMemberRepository.findByVehicleIdAndActiveTrueOrderByRoleAsc(id).stream()
+		List<CrewMemberResponse> crew = crewAssignmentRepository.findByVehicleIdAndEndedAtIsNullOrderByRoleAsc(id).stream()
 			.map(this::toCrewResponse)
 			.toList();
 		return toDetail(vehicle, crew);
@@ -130,6 +129,13 @@ public class VehicleService {
 	}
 
 	@Transactional
+	public VehicleDetailResponse updateOccupancy(UUID vehicleId, String occupancyStatus) {
+		Vehicle vehicle = findById(vehicleId);
+		vehicle.setOccupancyStatus(parseOccupancyStatus(occupancyStatus));
+		return getForAdmin(vehicleId);
+	}
+
+	@Transactional
 	public VehicleDetailResponse verify(UUID vehicleId) {
 		Vehicle vehicle = findById(vehicleId);
 		vehicle.verify();
@@ -147,7 +153,6 @@ public class VehicleService {
 		vehicle.setCreatedAt(Instant.now());
 		applyAdminUpdate(vehicle, request);
 		vehicleRepository.save(vehicle);
-		replaceCrew(vehicle, request);
 		return getForAdmin(vehicle.getId());
 	}
 
@@ -156,7 +161,6 @@ public class VehicleService {
 		Vehicle vehicle = findById(vehicleId);
 		validateAdminRequest(request, vehicleId);
 		applyAdminUpdate(vehicle, request);
-		replaceCrew(vehicle, request);
 		return getForAdmin(vehicleId);
 	}
 
@@ -191,31 +195,6 @@ public class VehicleService {
 		vehicle.setScreenCount(request.screenCount());
 		vehicle.setSoundSystem(request.soundSystem() == null || request.soundSystem().isBlank() ? "Not specified" : request.soundSystem().trim());
 		vehicle.setCustomFeatures(request.customFeatures() == null ? "" : request.customFeatures().trim());
-	}
-
-	private void replaceCrew(Vehicle vehicle, VehicleAdminUpdateRequest request) {
-		crewMemberRepository.deleteByVehicleId(vehicle.getId());
-		if (request.crew() == null) return;
-		Instant now = Instant.now();
-		request.crew().stream()
-			.filter(member -> member.displayName() != null && !member.displayName().isBlank())
-			.forEach(member -> {
-				CrewMember crewMember = new CrewMember();
-				crewMember.setId(UUID.randomUUID());
-				crewMember.setVehicle(vehicle);
-				crewMember.setDisplayName(member.displayName().trim());
-				try {
-					crewMember.setRole(CrewRole.valueOf(member.role().trim().toUpperCase()));
-				} catch (RuntimeException ex) {
-					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown crew role");
-				}
-				BigDecimal rating = member.rating() == null ? BigDecimal.ZERO : member.rating();
-				crewMember.setRating(rating.max(BigDecimal.ZERO).min(BigDecimal.valueOf(5)));
-				crewMember.setActive(true);
-				crewMember.setCreatedAt(now);
-				crewMember.setUpdatedAt(now);
-				crewMemberRepository.save(crewMember);
-			});
 	}
 
 	public List<VehicleSummaryResponse> pendingVerification() {
@@ -268,10 +247,10 @@ public class VehicleService {
 		);
 	}
 
-	private CrewMemberResponse toCrewResponse(CrewMember crewMember) {
+	private CrewMemberResponse toCrewResponse(CrewAssignment crewMember) {
 		return new CrewMemberResponse(
 			crewMember.getId(),
-			crewMember.getDisplayName(),
+			crewMember.getUser().getName(),
 			crewMember.getRole().name(),
 			crewMember.getRating()
 		);

@@ -1,19 +1,27 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/auth.guard';
-import { CrewDashboardComponent } from './features/crew-dashboard/crew-dashboard.component';
-import { AdminDashboardRouteComponent, AdminNganyasRouteComponent, AdminRoutesRouteComponent } from './features/fleet-overview/admin-route-pages.component';
+import { CrewDashboardRouteComponent, CrewMyNganyaRouteComponent, CrewNganyasRouteComponent } from './features/crew-dashboard/crew-route-pages.component';
+import { AdminDashboardRouteComponent, AdminNganyasRouteComponent, AdminRoutesRouteComponent, AdminUsersRouteComponent } from './features/fleet-overview/admin-route-pages.component';
 import { LiveMapComponent } from './features/live-map/live-map.component';
 import { LoginComponent } from './features/login/login.component';
+import { RegisterComponent } from './features/login/register.component';
+import { SetupPasswordComponent } from './features/login/setup-password.component';
 import { NganyaProfileComponent } from './features/nganya-profile/nganya-profile.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
-  { path: '', component: LiveMapComponent, canActivate: [authGuard], data: { roles: ['nganya'] } },
-  { path: 'nganyas/:id', component: NganyaProfileComponent, canActivate: [authGuard], data: { roles: ['nganya'] } },
+  { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
+  { path: 'setup-password', component: SetupPasswordComponent, canActivate: [guestGuard] },
+  { path: '', component: LiveMapComponent, canActivate: [authGuard], data: { roles: ['traveller'] } },
+  { path: 'nganyas/:id', component: NganyaProfileComponent, canActivate: [authGuard], data: { roles: ['traveller'] } },
   { path: 'fleet/nganyas/:id/preview', component: NganyaProfileComponent, canActivate: [authGuard], data: { roles: ['admin'], adminPreview: true } },
-  { path: 'crew', component: CrewDashboardComponent, canActivate: [authGuard], data: { roles: ['crew'] } },
+  { path: 'crew', component: CrewDashboardRouteComponent, canActivate: [authGuard], data: { roles: ['crew'] } },
+  { path: 'crew/my-nganya', component: CrewMyNganyaRouteComponent, canActivate: [authGuard], data: { roles: ['crew'] } },
+  { path: 'crew/nganyas', component: CrewNganyasRouteComponent, canActivate: [authGuard], data: { roles: ['crew'] } },
+  { path: 'crew/nganyas/:id', component: NganyaProfileComponent, canActivate: [authGuard], data: { roles: ['crew'], crewPreview: true } },
   { path: 'fleet', component: AdminDashboardRouteComponent, canActivate: [authGuard], data: { roles: ['admin'] } },
   { path: 'fleet/nganyas', component: AdminNganyasRouteComponent, canActivate: [authGuard], data: { roles: ['admin'] } },
   { path: 'fleet/routes', component: AdminRoutesRouteComponent, canActivate: [authGuard], data: { roles: ['admin'] } },
+  { path: 'fleet/users', component: AdminUsersRouteComponent, canActivate: [authGuard], data: { roles: ['admin'] } },
   { path: '**', redirectTo: '' }
 ];

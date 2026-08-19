@@ -9,3 +9,6 @@ export class AdminNganyasRouteComponent {}
 
 @Component({ selector: 'app-admin-routes-route', standalone: true, imports: [FleetOverviewComponent], template: '<app-fleet-overview initialTab="routes" />' })
 export class AdminRoutesRouteComponent {}
+
+@Component({ selector: 'app-admin-users-route', standalone: true, imports: [FleetOverviewComponent], template: '<app-fleet-overview initialTab="users" />' })
+export class AdminUsersRouteComponent {}
