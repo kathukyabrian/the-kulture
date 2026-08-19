@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: window.location.origin + "/api"
+  apiBaseUrl: "https://thekulture.co.ke/api"
 } as const;

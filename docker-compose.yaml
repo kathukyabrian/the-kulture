@@ -4,6 +4,10 @@ services:
     image: kitunda/the-kulture-web:1.0.0
     ports:
       - 80:80
+    volumes:
+      - ./web/nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/letsencrypt/
     restart: on-failure
   api:
     image: kitunda/the-kulture-api:1.0.0
@@ -15,3 +19,8 @@ services:
       - '8080:8080'
     volumes:
       - ./uploads:/uploads
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw

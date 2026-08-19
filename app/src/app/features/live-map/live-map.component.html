@@ -4,7 +4,8 @@
   <header class="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between border-b border-outline/50 bg-background/70 px-5 backdrop-blur-xl">
     <button
       type="button"
-      class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary shadow-neon"
+	      class="h-11 w-11 place-items-center rounded border border-primary/30 text-primary shadow-neon"
+	      [ngClass]="auth.signedIn() ? 'grid' : 'invisible md:grid'"
       aria-controls="main-menu"
       [attr.aria-expanded]="menuOpen"
       [attr.aria-label]="menuOpen ? 'Close menu' : 'Open menu'"
@@ -92,9 +93,10 @@
     </div>
   </section>
 
-  <nav class="fixed bottom-0 left-0 right-0 z-30 grid h-16 grid-cols-3 border-t border-outline bg-background/90 backdrop-blur-xl md:hidden">
-    <a routerLink="/" class="grid place-items-center text-primary" aria-label="Map"><span class="material-symbols-outlined">map</span></a>
-    <a [routerLink]="vehicles[0] ? ['/nganyas', vehicles[0].id] : ['/']" class="grid place-items-center text-muted" aria-label="Profile"><span class="material-symbols-outlined">badge</span></a>
-    <button type="button" (click)="logout()" class="grid place-items-center text-muted" aria-label="Sign out"><span class="material-symbols-outlined">logout</span></button>
-  </nav>
+	<nav class="fixed bottom-0 left-0 right-0 z-30 grid h-16 border-t border-outline bg-background/90 backdrop-blur-xl md:hidden" [ngClass]="auth.signedIn() ? 'grid-cols-3' : 'grid-cols-2'">
+	  <a routerLink="/" class="grid place-items-center text-primary" aria-label="Map"><span class="material-symbols-outlined">map</span></a>
+	  <a *ngIf="auth.signedIn()" [routerLink]="vehicles[0] ? ['/nganyas', vehicles[0].id] : ['/']" class="grid place-items-center text-muted" aria-label="Profile"><span class="material-symbols-outlined">badge</span></a>
+	  <button *ngIf="auth.signedIn(); else bottomSignIn" type="button" (click)="logout()" class="grid place-items-center text-muted" aria-label="Sign out"><span class="material-symbols-outlined">logout</span></button>
+	  <ng-template #bottomSignIn><a routerLink="/login" class="grid place-items-center text-muted" aria-label="Sign in"><span class="material-symbols-outlined">login</span></a></ng-template>
+	</nav>
 </main>

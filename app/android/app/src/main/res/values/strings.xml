@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">The Kulture</string>
+    <string name="title_activity_main">The Kulture</string>
+    <string name="package_name">tech.kitucode.kulture</string>
+    <string name="custom_url_scheme">tech.kitucode.kulture</string>
+</resources>
