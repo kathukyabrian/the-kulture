@@ -37,6 +37,8 @@ public class SecurityConfiguration {
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of(
+			"https://thekulture.co.ke",
+			"https://www.thekulture.co.ke",
 			"http://localhost:4200",
 			"http://127.0.0.1:4200",
 			"http://localhost",
