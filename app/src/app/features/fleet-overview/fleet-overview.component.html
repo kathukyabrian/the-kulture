@@ -1,115 +1,42 @@
-<main class="min-h-dvh bg-background pb-8 text-ink">
-  <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-outline/50 bg-background/80 px-5 backdrop-blur-xl">
-    <a routerLink="/" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" aria-label="Back to map">
-      <span class="material-symbols-outlined">arrow_back</span>
-    </a>
-    <h1 class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</h1>
-    <a routerLink="/crew" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Crew dashboard">
-      <span class="material-symbols-outlined">radio_button_checked</span>
-    </a>
-  </header>
+<main class="min-h-dvh overflow-x-hidden bg-background pb-24 text-ink md:pb-8 md:pl-64">
+  <aside class="admin-sidebar z-30 w-64 flex-col overflow-y-auto border-r border-outline/50 bg-surface/95 p-5">
+    <div class="border-b border-outline/50 pb-5"><p class="font-display text-lg font-black italic uppercase text-primary">The Kulture</p><p class="font-mono text-[10px] uppercase text-muted">Admin control</p></div>
+    <nav class="mt-6 space-y-2">
+      <a *ngFor="let item of [{id:'dashboard',label:'Dashboard',icon:'dashboard',path:'/fleet'},{id:'nganyas',label:'Nganyas',icon:'directions_bus',path:'/fleet/nganyas'},{id:'routes',label:'Routes',icon:'route',path:'/fleet/routes'}]" [routerLink]="item.path" class="flex min-h-12 w-full items-center gap-3 rounded px-4 font-mono text-xs font-bold uppercase" [ngClass]="adminTab === item.id ? 'bg-primary text-[#31003f]' : 'text-muted hover:bg-surface-high'"><span class="material-symbols-outlined">{{ item.icon }}</span><span class="flex-1 text-left">{{ item.label }}</span></a>
+    </nav>
+    <button (click)="logout()" class="admin-sidebar-signout flex min-h-12 items-center gap-3 rounded border border-outline px-4 font-mono text-xs uppercase text-muted"><span class="material-symbols-outlined">logout</span>Sign out</button>
+  </aside>
 
-  <p *ngIf="loading" class="mx-auto mt-6 max-w-7xl rounded border border-outline bg-surface p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
+  <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-outline/50 bg-background/80 px-5 backdrop-blur-xl"><button (click)="logout()" class="grid h-11 w-11 place-items-center text-primary md:invisible"><span class="material-symbols-outlined">logout</span></button><h1 class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</h1><span class="material-symbols-outlined text-secondary">admin_panel_settings</span></header>
+  <p *ngIf="loading" class="mx-auto mt-6 max-w-7xl p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
   <p *ngIf="error" class="mx-auto mt-6 max-w-7xl rounded border border-danger/40 bg-surface p-4 font-mono text-xs uppercase text-danger">{{ error }}</p>
 
-  <ng-container *ngIf="overview as overview">
-  <section class="mx-auto grid max-w-7xl gap-4 px-5 py-6 md:grid-cols-3">
-    <div class="rounded-lg bg-surface-high p-5 rim-light">
-      <div class="flex items-center justify-between">
-        <p class="font-mono text-sm uppercase text-secondary">Active Nganyas</p>
-        <span class="material-symbols-outlined text-secondary">directions_bus</span>
-      </div>
-      <p class="mt-5 font-display text-5xl font-black">{{ overview.activeVehicles }}</p>
-      <p class="mt-1 text-sm text-secondary">+12% from last hour</p>
-    </div>
-    <div class="rounded-lg bg-surface-high p-5 rim-light">
-      <div class="flex items-center justify-between">
-        <p class="font-mono text-sm uppercase text-danger">Live Alerts</p>
-        <span class="material-symbols-outlined text-danger">warning</span>
-      </div>
-      <p class="mt-5 font-display text-5xl font-black">{{ overview.liveAlerts }}</p>
-      <p class="mt-1 text-sm text-muted">{{ overview.pendingVerification }} pending verification</p>
-    </div>
-    <div class="rounded-lg bg-surface-high p-5 rim-light">
-      <div class="flex items-center justify-between">
-        <p class="font-mono text-sm uppercase text-primary">Revenue KES</p>
-        <span class="material-symbols-outlined text-primary">payments</span>
-      </div>
-      <p class="mt-5 font-display text-5xl font-black">{{ overview.projectedRevenue / 1000 | number:'1.1-1' }}K</p>
-      <p class="mt-1 text-sm text-muted">Daily projected</p>
-    </div>
-  </section>
+  <app-admin-dashboard-page *ngIf="adminTab === 'dashboard' && overview as overview" [overview]="overview" [pendingVehicles]="pendingVehicles" (verifyVehicle)="verify($event)" />
+  <app-admin-nganyas-page *ngIf="adminTab === 'nganyas'" [vehicles]="vehicles" [total]="vehicleTotal" [page]="vehiclePage" [pageCount]="vehiclePageCount" [perPage]="vehiclesPerPage" [query]="searchQuery" (queryChange)="searchQuery = $event; searchVehicles()" (pageChange)="changeVehiclePage($event)" (createVehicle)="createVehicle()" (editVehicle)="editVehicle($event)" />
+  <app-admin-routes-page *ngIf="adminTab === 'routes'" [routes]="managedRoutes" [total]="routeTotal" [page]="routePage" [pageCount]="routePageCount" [perPage]="routesPerPage" [query]="routeSearchQuery" (queryChange)="routeSearchQuery = $event; searchRoutes()" (pageChange)="changeRoutePage($event)" (createRoute)="createRoute()" (editRoute)="editRoute($event)" />
 
-  <section class="mx-auto grid max-w-7xl gap-4 px-5 md:grid-cols-12">
-    <div class="relative min-h-[420px] overflow-hidden rounded-lg bg-surface md:col-span-8 rim-light">
-      <div class="absolute inset-0 map-grid"></div>
-      <svg class="absolute inset-0 h-full w-full" viewBox="0 0 760 420" aria-hidden="true">
-        <path d="M70 340 C200 250 280 310 380 210 C480 110 585 160 690 62" fill="none" stroke="#ecb2ff" stroke-width="4" stroke-linecap="round" />
-        <path d="M48 130 L232 170 L430 96 L710 220" fill="none" stroke="#a7ffb3" stroke-width="3" stroke-dasharray="12 8" />
-        <circle cx="244" cy="258" r="8" fill="#e80063" />
-        <circle cx="520" cy="145" r="8" fill="#00ee70" />
-      </svg>
-      <div class="absolute left-4 top-4 rounded border border-outline/60 bg-surface/80 p-3 backdrop-blur-xl">
-        <p class="font-mono text-xs uppercase text-primary">Live Route Status</p>
-        <p class="mt-1 text-sm text-muted">Tracking {{ overview.activeVehicles }} active routes</p>
+  <div *ngIf="editForm" class="fixed inset-0 z-40 overflow-y-auto bg-black/80 p-4" (click)="cancelEdit()"><form class="mx-auto my-4 max-w-2xl rounded-lg border border-primary/30 bg-surface p-5" (click)="$event.stopPropagation()" (ngSubmit)="saveVehicle()"><div class="flex justify-between"><h2 class="font-display text-3xl font-black uppercase">{{ editing ? 'Edit ' + editing.name : 'Create nganya' }}</h2><button type="button" (click)="cancelEdit()">✕</button></div><div class="mt-6 grid gap-4 sm:grid-cols-2">
+    <label>Name<input name="name" [(ngModel)]="editForm.name" required class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label>Plate<input name="plate" [(ngModel)]="editForm.plateNumber" required class="mt-1 h-11 w-full rounded bg-background px-3"/></label>
+    <label class="relative sm:col-span-2">Route
+      <input name="routeSearch" type="search" autocomplete="off" [ngModel]="routePickerQuery" (ngModelChange)="searchVehicleRoutes($event)" (focus)="routePickerOpen = true" (blur)="closeRoutePicker()" placeholder="Search route number, name, origin or destination" class="mt-1 h-11 w-full rounded bg-background px-3" required/>
+      <div *ngIf="routePickerOpen" class="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded border border-outline bg-surface shadow-xl">
+        <button *ngFor="let route of filteredVehicleRoutes" type="button" (mousedown)="$event.preventDefault(); selectVehicleRoute(route)" class="block w-full border-b border-outline/40 px-3 py-3 text-left last:border-0 hover:bg-surface-high">
+          <span class="block font-mono text-xs font-bold text-secondary">[{{ route.routeNumber }}] {{ route.name }}</span>
+          <span class="mt-1 block text-xs text-muted">{{ route.origin }} → {{ route.destination }}</span>
+        </button>
+        <p *ngIf="!filteredVehicleRoutes.length" class="px-3 py-4 text-center font-mono text-xs uppercase text-muted">No matching routes</p>
       </div>
-    </div>
+    </label>
+    <label>Status<select name="status" [(ngModel)]="editForm.status" class="mt-1 h-11 w-full rounded bg-background px-3"><option>ONLINE</option><option>OFFLINE</option><option>MAINTENANCE</option></select></label><label>Visibility<select name="listing" [(ngModel)]="editForm.listingState" class="mt-1 h-11 w-full rounded bg-background px-3"><option>ACTIVE</option><option>HIDDEN</option><option>SUSPENDED</option></select></label>
+    <label>Bass level<input name="bass" type="number" min="0" max="100" [(ngModel)]="editForm.bassLevel" class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label>Screens<input name="screens" type="number" min="0" [(ngModel)]="editForm.screenCount" class="mt-1 h-11 w-full rounded bg-background px-3"/></label>
+    <label class="sm:col-span-2">Sound system<input name="sound" [(ngModel)]="editForm.soundSystem" class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label class="sm:col-span-2">Other features<textarea name="features" [(ngModel)]="editForm.customFeatures" class="mt-1 w-full rounded bg-background p-3"></textarea></label>
+    <label>Occupancy<select name="occupancy" [(ngModel)]="editForm.occupancyStatus" class="mt-1 h-11 w-full rounded bg-background px-3"><option>LOW</option><option>MEDIUM</option><option>FULL</option></select></label><label class="flex items-center gap-2"><input name="wifi" type="checkbox" [(ngModel)]="editForm.wifiAvailable"/> Wi-Fi</label>
+    <section *ngIf="editing" class="rounded border border-outline p-3 sm:col-span-2"><div class="flex items-center justify-between gap-3"><div><h3 class="font-mono text-xs uppercase">Gallery images</h3><p class="mt-1 text-xs text-muted">JPG, PNG or WebP · max 8 MB</p></div><label class="cursor-pointer rounded bg-secondary px-4 py-3 font-mono text-xs font-bold uppercase text-[#003915]"><input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" (change)="uploadImage($event)" [disabled]="uploadingImage"/>{{ uploadingImage ? 'Uploading...' : 'Upload image' }}</label></div><div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3"><div *ngFor="let image of vehicleImages" class="relative overflow-hidden rounded bg-background"><img [src]="image.url" [alt]="image.originalName" class="aspect-[4/3] w-full object-cover"/><button type="button" (click)="deleteImage(image)" class="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded bg-black/80 text-danger" aria-label="Delete image"><span class="material-symbols-outlined text-lg">delete</span></button></div><p *ngIf="!vehicleImages.length" class="col-span-full py-4 text-center text-xs text-muted">No images uploaded</p></div></section>
+    <p *ngIf="!editing" class="rounded border border-outline p-3 text-xs text-muted sm:col-span-2">Create the nganya first, then edit it to upload gallery images.</p>
+    <section class="sm:col-span-2"><div class="flex justify-between"><h3>Assigned crew</h3><button type="button" (click)="addCrewMember()" class="text-secondary">+ Add</button></div><div *ngFor="let member of editForm.crew; let i=index" class="mt-2 grid gap-2 sm:grid-cols-[1fr_150px_44px]"><input [name]="'crew'+i" [(ngModel)]="member.displayName" class="h-11 rounded bg-background px-3"/><select [name]="'role'+i" [(ngModel)]="member.role" class="h-11 rounded bg-background"><option>DRIVER</option><option>CONDUCTOR</option></select><button type="button" (click)="removeCrewMember(i)" class="text-danger">✕</button></div></section>
+  </div><div class="mt-6 flex justify-end gap-3"><button type="button" (click)="cancelEdit()" class="px-5">Cancel</button><button type="submit" class="rounded bg-primary px-6 py-3 text-[#31003f]">Save</button></div></form></div>
 
-    <aside class="rounded-lg bg-surface p-4 md:col-span-4 rim-light">
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="font-display text-2xl font-black uppercase text-primary">Pending</h2>
-        <span class="rounded border border-primary/40 px-2 py-1 font-mono text-xs text-primary">{{ overview.pendingVerification }} new</span>
-      </div>
-      <div class="space-y-3">
-        <div *ngFor="let vehicle of pendingVehicles" class="rounded border border-outline/60 bg-surface-high p-3">
-          <p class="font-mono text-sm font-bold text-ink">[ {{ vehicle.plateNumber }} ]</p>
-          <p class="mt-1 text-sm text-muted">{{ vehicle.name }} · {{ vehicle.routeName }}</p>
-          <button (click)="verify(vehicle.id)" class="mt-3 min-h-10 w-full rounded bg-secondary font-mono text-xs uppercase text-[#003915] active:scale-[0.99]">Verify</button>
-        </div>
-        <p *ngIf="pendingVehicles.length === 0" class="rounded border border-outline/60 bg-surface-high p-3 font-mono text-xs uppercase text-muted">No pending vehicles</p>
-      </div>
-    </aside>
+  <div *ngIf="routeForm" class="fixed inset-0 z-40 overflow-y-auto bg-black/80 p-4" (click)="cancelRouteEdit()"><form class="mx-auto my-4 max-w-2xl rounded-lg border border-secondary/30 bg-surface p-5" (click)="$event.stopPropagation()" (ngSubmit)="saveRoute()"><h2 class="font-display text-3xl font-black uppercase">{{ editingRouteId ? 'Edit route' : 'Create route' }}</h2><div class="mt-6 grid gap-4 sm:grid-cols-2"><label>Number<input name="rnum" [(ngModel)]="routeForm.routeNumber" required class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label>Name<input name="rname" [(ngModel)]="routeForm.name" required class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label>Origin<input name="origin" [(ngModel)]="routeForm.origin" required class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label>Destination<input name="destination" [(ngModel)]="routeForm.destination" required class="mt-1 h-11 w-full rounded bg-background px-3"/></label><label class="sm:col-span-2">Description<textarea name="description" [(ngModel)]="routeForm.description" class="mt-1 w-full rounded bg-background p-3"></textarea></label><label><input name="active" type="checkbox" [(ngModel)]="routeForm.active"/> Active</label></div><div class="mt-6 flex justify-end gap-3"><button type="button" (click)="cancelRouteEdit()">Cancel</button><button type="submit" class="rounded bg-secondary px-6 py-3 text-[#003915]">Save</button></div></form></div>
 
-    <section class="rounded-lg bg-surface p-4 md:col-span-7 rim-light">
-      <h2 class="mb-4 font-display text-2xl font-black uppercase text-secondary">Top Crew Performance</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[520px] text-left">
-          <thead class="border-b border-outline/60 font-mono text-xs uppercase text-muted">
-            <tr>
-              <th class="py-3">Crew</th>
-              <th>Vehicle</th>
-              <th>Route</th>
-              <th class="text-right">KES</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let vehicle of overview.activeFleet" class="border-b border-outline/40">
-              <td class="py-4">{{ vehicle.status }}</td>
-              <td class="font-mono text-sm">{{ vehicle.name }}</td>
-              <td class="font-mono text-sm">[ {{ vehicle.routeNumber }} ]</td>
-              <td class="text-right font-mono text-sm">{{ vehicle.etaMinutes }} min</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="rounded-lg bg-surface p-4 md:col-span-5 rim-light">
-      <h2 class="mb-4 font-display text-2xl font-black uppercase text-primary">Fleet Distribution</h2>
-      <div class="grid place-items-center py-6">
-        <div class="grid h-48 w-48 place-items-center rounded-full border-[18px] border-primary border-r-secondary border-b-tertiary shadow-neon">
-          <div class="text-center">
-            <p class="font-mono text-xs uppercase text-muted">Total</p>
-            <p class="font-display text-5xl font-black">{{ overview.activeFleet.length + pendingVehicles.length }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="grid grid-cols-3 gap-3 font-mono text-xs uppercase text-muted">
-        <span><i class="mr-2 inline-block h-2 w-2 bg-primary"></i>Active</span>
-        <span><i class="mr-2 inline-block h-2 w-2 bg-secondary"></i>Idle</span>
-        <span><i class="mr-2 inline-block h-2 w-2 bg-tertiary"></i>Maint.</span>
-      </div>
-    </section>
-  </section>
-  </ng-container>
+  <nav class="fixed bottom-0 left-0 right-0 z-30 grid h-20 grid-cols-3 border-t border-outline bg-surface/95 md:hidden"><a *ngFor="let item of [{id:'dashboard',label:'Dashboard',icon:'dashboard',path:'/fleet'},{id:'nganyas',label:'Nganyas',icon:'directions_bus',path:'/fleet/nganyas'},{id:'routes',label:'Routes',icon:'route',path:'/fleet/routes'}]" [routerLink]="item.path" class="grid place-items-center text-[10px] uppercase" [ngClass]="adminTab===item.id?'text-primary':'text-muted'"><span><span class="material-symbols-outlined block">{{item.icon}}</span>{{item.label}}</span></a></nav>
 </main>

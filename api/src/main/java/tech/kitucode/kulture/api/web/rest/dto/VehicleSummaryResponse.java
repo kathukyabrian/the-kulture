@@ -12,6 +12,7 @@ public record VehicleSummaryResponse(
 	String status,
 	String occupancyStatus,
 	boolean verified,
+	String listingState,
 	int etaMinutes,
 	LocationResponse latestLocation
 ) {

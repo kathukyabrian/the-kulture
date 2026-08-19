@@ -18,9 +18,9 @@
       <span class="material-symbols-outlined">{{ menuOpen ? 'close' : 'menu' }}</span>
     </button>
     <a routerLink="/" class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</a>
-    <a routerLink="/crew" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Crew dashboard">
-      <span class="material-symbols-outlined">person_pin_circle</span>
-    </a>
+    <button type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign out">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
   </header>
 
   <button
@@ -41,14 +41,6 @@
         <span class="material-symbols-outlined">map</span>
         <span>Live Map</span>
       </a>
-      <a routerLink="/fleet" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
-        <span class="material-symbols-outlined text-secondary">monitoring</span>
-        <span>Fleet Overview</span>
-      </a>
-      <a routerLink="/crew" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
-        <span class="material-symbols-outlined text-tertiary">radio_button_checked</span>
-        <span>Crew Dashboard</span>
-      </a>
       <a
         [routerLink]="vehicles[0] ? ['/nganyas', vehicles[0].id] : ['/']"
         (click)="closeMenu()"
@@ -57,6 +49,10 @@
         <span class="material-symbols-outlined text-primary">badge</span>
         <span>{{ vehicles[0] ? vehicles[0].name : 'Nganya Profile' }}</span>
       </a>
+      <button type="button" (click)="logout()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
+        <span class="material-symbols-outlined text-secondary">logout</span>
+        <span>Sign Out</span>
+      </button>
     </nav>
   </aside>
 
@@ -96,9 +92,9 @@
         <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Live tracking active</p>
         <h1 class="font-display text-3xl font-black uppercase text-ink">Nearby Nganyas</h1>
       </div>
-      <a routerLink="/fleet" class="grid h-11 w-11 place-items-center rounded border border-primary/40 text-primary" aria-label="Fleet overview">
-        <span class="material-symbols-outlined">monitoring</span>
-      </a>
+      <button type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-primary/40 text-primary" aria-label="Sign out">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
     </div>
 
     <div class="space-y-3">
@@ -124,10 +120,9 @@
     </div>
   </section>
 
-  <nav class="fixed bottom-0 left-0 right-0 z-30 grid h-16 grid-cols-4 border-t border-outline bg-background/90 backdrop-blur-xl md:hidden">
+  <nav class="fixed bottom-0 left-0 right-0 z-30 grid h-16 grid-cols-3 border-t border-outline bg-background/90 backdrop-blur-xl md:hidden">
     <a routerLink="/" class="grid place-items-center text-primary" aria-label="Map"><span class="material-symbols-outlined">map</span></a>
-    <a routerLink="/fleet" class="grid place-items-center text-muted" aria-label="Fleet"><span class="material-symbols-outlined">directions_bus</span></a>
     <a [routerLink]="vehicles[0] ? ['/nganyas', vehicles[0].id] : ['/']" class="grid place-items-center text-muted" aria-label="Profile"><span class="material-symbols-outlined">badge</span></a>
-    <a routerLink="/crew" class="grid place-items-center text-muted" aria-label="Crew"><span class="material-symbols-outlined">radio_button_checked</span></a>
+    <button type="button" (click)="logout()" class="grid place-items-center text-muted" aria-label="Sign out"><span class="material-symbols-outlined">logout</span></button>
   </nav>
 </main>

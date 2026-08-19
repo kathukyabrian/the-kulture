@@ -1,18 +1,19 @@
 <main class="min-h-dvh bg-background pb-20 text-ink">
   <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-outline/50 bg-background/80 px-5 backdrop-blur-xl">
-    <a routerLink="/" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" aria-label="Back to map">
+    <a [routerLink]="backPath" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" [attr.aria-label]="adminPreview ? 'Back to admin dashboard' : 'Back to map'">
       <span class="material-symbols-outlined">arrow_back</span>
     </a>
     <h1 class="font-display text-xl font-black uppercase text-primary">The Kulture</h1>
-    <a routerLink="/crew" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Crew dashboard">
-      <span class="material-symbols-outlined">radio_button_checked</span>
-    </a>
+    <button type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign out">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
   </header>
 
   <p *ngIf="loading" class="mx-5 mt-5 rounded border border-outline bg-surface p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
   <p *ngIf="error" class="mx-5 mt-5 rounded border border-danger/40 bg-surface p-4 font-mono text-xs uppercase text-danger">{{ error }}</p>
 
   <ng-container *ngIf="vehicle as vehicle">
+  <div *ngIf="adminPreview" class="border-b border-primary/20 bg-primary/10 px-5 py-2 text-center font-mono text-xs uppercase tracking-wider text-primary">Admin preview · Public profile view</div>
   <section class="relative min-h-[360px] overflow-hidden border-b border-outline">
     <div class="absolute inset-0 map-grid"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"></div>
@@ -68,10 +69,18 @@
         <h3 class="font-mono text-sm uppercase tracking-[0.16em] text-muted">Custom Art Gallery</h3>
         <span class="font-mono text-xs uppercase text-primary">{{ vehicle.verified ? 'Verified' : 'Pending' }}</span>
       </div>
-      <div class="grid grid-cols-3 gap-3">
-        <div class="aspect-[4/5] rounded bg-[radial-gradient(circle_at_28%_20%,rgba(236,178,255,0.55),transparent_28%),linear-gradient(145deg,#262126,#101010)]"></div>
-        <div class="aspect-[4/5] rounded bg-[radial-gradient(circle_at_70%_35%,rgba(167,255,179,0.45),transparent_24%),linear-gradient(160deg,#202b25,#111)]"></div>
-        <div class="aspect-[4/5] rounded bg-[radial-gradient(circle_at_52%_50%,rgba(255,178,191,0.5),transparent_25%),linear-gradient(145deg,#2b2026,#111)]"></div>
+      <div *ngIf="images.length; else emptyGallery" class="grid grid-cols-2 gap-3 sm:grid-cols-3"><img *ngFor="let image of images" [src]="image.url" [alt]="vehicle.name + ' gallery image'" class="aspect-[4/5] w-full rounded object-cover" loading="lazy"/></div>
+      <ng-template #emptyGallery><div class="grid min-h-36 place-items-center rounded bg-surface-high font-mono text-xs uppercase text-muted">No gallery images yet</div></ng-template>
+    </div>
+
+    <div class="grid gap-3 md:col-span-2 md:grid-cols-2">
+      <div class="rounded-lg bg-surface-high p-4 rim-light">
+        <p class="font-mono text-xs uppercase tracking-[0.16em] text-primary">Sound system</p>
+        <p class="mt-3 text-sm leading-6 text-ink">{{ vehicle.soundSystem }}</p>
+      </div>
+      <div *ngIf="vehicle.customFeatures" class="rounded-lg bg-surface-high p-4 rim-light">
+        <p class="font-mono text-xs uppercase tracking-[0.16em] text-secondary">More features</p>
+        <p class="mt-3 whitespace-pre-line text-sm leading-6 text-ink">{{ vehicle.customFeatures }}</p>
       </div>
     </div>
   </section>

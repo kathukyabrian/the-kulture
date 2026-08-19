@@ -3,3 +3,11 @@ databaseChangeLog:
       file: db/changelog/changes/001-init.yaml
   - include:
       file: db/changelog/changes/002-real-nganya-seed.yaml
+  - include:
+      file: db/changelog/changes/003-remove-earnings.yaml
+  - include:
+      file: db/changelog/changes/004-nganya-management.yaml
+  - include:
+      file: db/changelog/changes/005-media.yaml
+  - include:
+      file: db/changelog/changes/006-remove-alerts.yaml

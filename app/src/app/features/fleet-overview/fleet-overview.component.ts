@@ -1,29 +1,69 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
-import { FleetOverviewResponse, VehicleSummaryResponse } from '../../core/api.models';
+import { FleetOverviewResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, VehicleDetailResponse, MediaResponse, VehicleSummaryResponse } from '../../core/api.models';
+import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
+import { ConfirmationService } from '../../core/confirmation.service';
+import { AdminDashboardPageComponent } from './pages/admin-dashboard-page.component';
+import { AdminNganyasPageComponent } from './pages/admin-nganyas-page.component';
+import { AdminRoutesPageComponent } from './pages/admin-routes-page.component';
 
 @Component({
   selector: 'app-fleet-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './fleet-overview.component.html'
+  imports: [CommonModule, FormsModule, RouterLink, AdminDashboardPageComponent, AdminNganyasPageComponent, AdminRoutesPageComponent],
+  templateUrl: './fleet-overview.component.html',
+  styleUrl: './fleet-overview.component.scss'
 })
 export class FleetOverviewComponent implements OnInit {
+  @Input() initialTab: 'dashboard' | 'nganyas' | 'routes' = 'dashboard';
+  adminTab: 'dashboard' | 'nganyas' | 'routes' = 'dashboard';
   overview: FleetOverviewResponse | null = null;
   pendingVehicles: VehicleSummaryResponse[] = [];
+  vehicles: VehicleSummaryResponse[] = [];
+  routes: RouteResponse[] = [];
+  managedRoutes: RouteResponse[] = [];
+  routeForm: RouteAdminRequest | null = null;
+  editingRouteId: string | null = null;
+  routeSearchQuery = '';
+  routePage = 1;
+  routeTotal = 0;
+  routePageCount = 1;
+  readonly routesPerPage = 9;
+  savingRoute = false;
+  editing: VehicleDetailResponse | null = null;
+  vehicleImages: MediaResponse[] = [];
+  uploadingImage = false;
+  editForm: VehicleAdminUpdateRequest | null = null;
+  routePickerQuery = '';
+  routePickerOpen = false;
+  searchQuery = '';
+  vehiclePage = 1;
+  vehicleTotal = 0;
+  vehiclePageCount = 1;
+  readonly vehiclesPerPage = 9;
+  saving = false;
   loading = true;
   error = '';
 
-  constructor(private readonly api: KultureApiService) {}
+  constructor(
+    private readonly api: KultureApiService,
+    private readonly auth: AuthService,
+    private readonly router: Router,
+    private readonly confirmation: ConfirmationService
+  ) {}
 
   ngOnInit(): void {
+    this.adminTab = this.initialTab;
     this.loadDashboard();
   }
 
-  verify(vehicleId: string): void {
+  async verify(vehicleId: string): Promise<void> {
+    const vehicle = this.pendingVehicles.find((candidate) => candidate.id === vehicleId);
+    if (!(await this.confirmation.confirm({ title: 'Verify nganya?', message: `${vehicle?.name ?? 'This nganya'} will become approved and visible as verified.`, confirmLabel: 'Verify' }))) return;
     this.api
       .verifyVehicle(vehicleId)
       .pipe(
@@ -35,22 +75,241 @@ export class FleetOverviewComponent implements OnInit {
       .subscribe(() => this.loadDashboard());
   }
 
+  searchVehicles(): void {
+    this.vehiclePage = 1;
+    this.loadVehiclePage();
+  }
+
+  changeVehiclePage(page: number): void {
+    this.vehiclePage = Math.min(Math.max(page, 1), this.vehiclePageCount);
+    this.loadVehiclePage();
+  }
+
+  searchRoutes(): void { this.routePage = 1; this.loadRoutePage(); }
+  changeRoutePage(page: number): void { this.routePage = Math.min(Math.max(page, 1), this.routePageCount); this.loadRoutePage(); }
+  createRoute(): void { this.editingRouteId = null; this.routeForm = { routeNumber: '', name: '', origin: '', destination: '', description: '', active: true }; }
+  editRoute(route: RouteResponse): void { this.editingRouteId = route.id; this.routeForm = { routeNumber: route.routeNumber, name: route.name, origin: route.origin, destination: route.destination, description: route.description, active: route.active }; }
+  cancelRouteEdit(): void { this.editingRouteId = null; this.routeForm = null; }
+
+  async saveRoute(): Promise<void> {
+    if (!this.routeForm) return;
+    const creating = !this.editingRouteId;
+    if (!(await this.confirmation.confirm({ title: creating ? 'Create route?' : 'Save route?', message: `${this.routeForm.routeNumber} · ${this.routeForm.name} will be ${creating ? 'created' : 'updated'}.`, confirmLabel: creating ? 'Create' : 'Save' }))) return;
+    this.savingRoute = true;
+    const request = this.editingRouteId ? this.api.updateRoute(this.editingRouteId, this.routeForm) : this.api.createRoute(this.routeForm);
+    request.subscribe({ next: () => { this.savingRoute = false; this.cancelRouteEdit(); this.loadDashboard(); }, error: () => { this.savingRoute = false; this.error = 'Could not save this route.'; } });
+  }
+
+  editVehicle(vehicleId: string): void {
+    this.error = '';
+    this.api.getAdminVehicle(vehicleId).subscribe({
+      next: (vehicle) => {
+        this.editing = vehicle;
+        this.editForm = {
+          name: vehicle.name,
+          plateNumber: vehicle.plateNumber,
+          routeId: vehicle.route.id,
+          status: vehicle.status,
+          occupancyStatus: vehicle.occupancyStatus,
+          listingState: vehicle.listingState,
+          wifiAvailable: vehicle.wifiAvailable,
+          bassLevel: vehicle.bassLevel,
+          screenCount: vehicle.screenCount,
+          soundSystem: vehicle.soundSystem,
+          customFeatures: vehicle.customFeatures,
+          crew: vehicle.crew.map((member) => ({ displayName: member.displayName, role: member.role, rating: member.rating }))
+        };
+        this.routePickerQuery = this.routeLabel(vehicle.route);
+        this.routePickerOpen = false;
+        this.loadVehicleImages(vehicle.id);
+      },
+      error: () => (this.error = 'Could not load this nganya.')
+    });
+  }
+
+  createVehicle(): void {
+    const firstRoute = this.routes[0];
+    if (!firstRoute) {
+      this.error = 'Add an active route before creating a nganya.';
+      return;
+    }
+    this.editing = null;
+    this.vehicleImages = [];
+    this.editForm = {
+      name: '',
+      plateNumber: '',
+      routeId: '',
+      status: 'OFFLINE',
+      occupancyStatus: 'LOW',
+      listingState: 'ACTIVE',
+      wifiAvailable: false,
+      bassLevel: 50,
+      screenCount: 0,
+      soundSystem: '',
+      customFeatures: '',
+      crew: []
+    };
+    this.routePickerQuery = '';
+    this.routePickerOpen = false;
+  }
+
+  get filteredVehicleRoutes(): RouteResponse[] {
+    const query = this.routePickerQuery.trim().toLowerCase();
+    if (!query) return this.routes;
+    return this.routes.filter((route) =>
+      [route.routeNumber, route.name, route.origin, route.destination].some((value) => value.toLowerCase().includes(query))
+    );
+  }
+
+  searchVehicleRoutes(query: string): void {
+    this.routePickerQuery = query;
+    this.routePickerOpen = true;
+    if (this.editForm) this.editForm.routeId = '';
+  }
+
+  selectVehicleRoute(route: RouteResponse): void {
+    if (!this.editForm) return;
+    this.editForm.routeId = route.id;
+    this.routePickerQuery = this.routeLabel(route);
+    this.routePickerOpen = false;
+  }
+
+  closeRoutePicker(): void {
+    this.routePickerOpen = false;
+  }
+
+  addCrewMember(): void {
+    this.editForm?.crew.push({ displayName: '', role: 'DRIVER', rating: 0 });
+  }
+
+  async removeCrewMember(index: number): Promise<void> {
+    const member = this.editForm?.crew[index];
+    if (!(await this.confirmation.confirm({ title: 'Remove crew member?', message: `${member?.displayName || 'This crew member'} will be removed when you save the profile.`, confirmLabel: 'Remove' }))) return;
+    this.editForm?.crew.splice(index, 1);
+  }
+
+  cancelEdit(): void {
+    this.editing = null;
+    this.editForm = null;
+    this.routePickerQuery = '';
+    this.routePickerOpen = false;
+    this.vehicleImages = [];
+  }
+
+  uploadImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!this.editing || !file) return;
+    this.uploadingImage = true;
+    this.api.uploadVehicleImage(this.editing.id, file).subscribe({ next: () => { this.uploadingImage = false; input.value = ''; this.loadVehicleImages(this.editing!.id); }, error: () => { this.uploadingImage = false; this.error = 'Could not upload image. Use JPG, PNG or WebP up to 8 MB.'; } });
+  }
+
+  async deleteImage(image: MediaResponse): Promise<void> {
+    if (!this.editing || !(await this.confirmation.confirm({ title: 'Delete image?', message: `${image.originalName} will be permanently removed from the public gallery.`, confirmLabel: 'Delete' }))) return;
+    this.api.deleteVehicleImage(this.editing.id, image.id).subscribe({ next: () => this.loadVehicleImages(this.editing!.id), error: () => (this.error = 'Could not delete image.') });
+  }
+
+  async saveVehicle(): Promise<void> {
+    if (!this.editForm) return;
+    if (!this.editForm.routeId) {
+      this.error = 'Select a route for this nganya.';
+      this.routePickerOpen = true;
+      return;
+    }
+    const isCreating = !this.editing;
+    const confirmed = await this.confirmation.confirm({
+      title: isCreating ? 'Create nganya?' : 'Save changes?',
+      message: isCreating ? `${this.editForm.name || 'This nganya'} will be added for admin verification.` : `Your changes to ${this.editing?.name} will be saved.`,
+      confirmLabel: isCreating ? 'Create' : 'Save'
+    });
+    if (!confirmed) return;
+    this.saving = true;
+    this.error = '';
+    const request = this.editing
+      ? this.api.updateVehicle(this.editing.id, this.editForm)
+      : this.api.createVehicle(this.editForm);
+    request.subscribe({
+      next: () => {
+        this.saving = false;
+        if (isCreating) {
+          window.location.reload();
+          return;
+        }
+        this.cancelEdit();
+        this.loadDashboard();
+      },
+      error: () => {
+        this.saving = false;
+        this.error = 'Could not save this nganya.';
+      }
+    });
+  }
+
+  async logout(): Promise<void> {
+    if (!(await this.confirmation.confirm({ title: 'Sign out?', message: 'You will need to enter your access details to return.', confirmLabel: 'Sign out' }))) return;
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
+  }
+
   private loadDashboard(): void {
     this.loading = true;
-    forkJoin({
-      overview: this.api.getFleetOverview(),
-      pending: this.api.getPendingVerification()
-    })
-      .pipe(
-        catchError(() => {
-          this.error = 'Could not reach the backend API.';
-          return of({ overview: null, pending: [] as VehicleSummaryResponse[] });
-        })
-      )
-      .subscribe(({ overview, pending }) => {
-        this.overview = overview;
-        this.pendingVehicles = pending;
-        this.loading = false;
+    this.error = '';
+
+    if (this.adminTab === 'dashboard') {
+      forkJoin({ overview: this.api.getFleetOverview(), pending: this.api.getPendingVerification() }).subscribe({
+        next: ({ overview, pending }) => { this.overview = overview; this.pendingVehicles = pending; this.loading = false; },
+        error: () => { this.error = 'Could not load dashboard data.'; this.loading = false; }
       });
+      return;
+    }
+
+    if (this.adminTab === 'nganyas') {
+      forkJoin({ routes: this.api.getRoutes(), vehiclesPage: this.api.getAdminVehicles(this.searchQuery, this.vehiclePage - 1, this.vehiclesPerPage) }).subscribe({
+        next: ({ routes, vehiclesPage }) => {
+          this.routes = routes;
+          this.applyVehiclePage(vehiclesPage);
+          this.loading = false;
+        },
+        error: () => { this.error = 'Could not load nganyas.'; this.loading = false; }
+      });
+      return;
+    }
+
+    if (this.adminTab === 'routes') {
+      this.loadRoutePage();
+      return;
+    }
   }
+
+  private loadVehiclePage(): void {
+    this.error = '';
+    this.api.getAdminVehicles(this.searchQuery, this.vehiclePage - 1, this.vehiclesPerPage).subscribe({
+      next: (result) => {
+        this.applyVehiclePage(result);
+        this.loading = false;
+      },
+      error: () => { this.error = 'Could not load nganyas.'; this.loading = false; }
+    });
+  }
+
+  private loadRoutePage(): void {
+    this.error = '';
+    this.api.getAdminRoutes(this.routeSearchQuery, this.routePage - 1, this.routesPerPage).subscribe({
+      next: (result) => { this.managedRoutes = result.items; this.routeTotal = result.totalItems; this.routePageCount = Math.max(1, result.totalPages); this.routePage = result.page + 1; this.loading = false; },
+      error: () => { this.error = 'Could not load routes.'; this.loading = false; }
+    });
+  }
+
+  private applyVehiclePage(result: { items: VehicleSummaryResponse[]; totalItems: number; totalPages: number; page: number }): void {
+    this.vehicles = result.items;
+    this.vehicleTotal = result.totalItems;
+    this.vehiclePageCount = Math.max(1, result.totalPages);
+    this.vehiclePage = result.page + 1;
+  }
+
+  private routeLabel(route: RouteResponse): string {
+    return `[${route.routeNumber}] ${route.name} · ${route.origin} → ${route.destination}`;
+  }
+
+  private loadVehicleImages(vehicleId: string): void { this.api.getAdminVehicleImages(vehicleId).subscribe({ next: (images) => (this.vehicleImages = images), error: () => (this.error = 'Could not load gallery images.') }); }
 }

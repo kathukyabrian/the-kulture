@@ -1,0 +1,16 @@
+<div *ngIf="confirmation.prompt() as prompt" class="fixed inset-0 z-[100] grid place-items-center bg-black/80 p-4 backdrop-blur-sm" role="presentation" (click)="confirmation.respond(false)">
+  <section class="w-full max-w-md overflow-hidden rounded-xl border border-tertiary/30 bg-surface shadow-pink rim-light" role="alertdialog" aria-modal="true" aria-labelledby="confirmation-title" aria-describedby="confirmation-message" (click)="$event.stopPropagation()">
+    <div class="flex items-start gap-4 p-5 md:p-6">
+      <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-tertiary/40 bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined">warning</span></span>
+      <div class="min-w-0">
+        <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-tertiary">Confirmation required</p>
+        <h2 id="confirmation-title" class="mt-2 font-display text-2xl font-black uppercase text-ink">{{ prompt.title }}</h2>
+        <p id="confirmation-message" class="mt-3 text-sm leading-6 text-muted">{{ prompt.message }}</p>
+      </div>
+    </div>
+    <div class="grid gap-3 border-t border-outline/50 bg-surface-high p-4 sm:grid-cols-2">
+      <button type="button" (click)="confirmation.respond(false)" class="min-h-11 rounded border border-outline px-4 font-mono text-xs font-bold uppercase text-muted active:scale-[0.99]">Cancel</button>
+      <button type="button" (click)="confirmation.respond(true)" class="min-h-11 rounded bg-tertiary px-4 font-mono text-xs font-bold uppercase text-white active:scale-[0.99]">{{ prompt.confirmLabel }}</button>
+    </div>
+  </section>
+</div>

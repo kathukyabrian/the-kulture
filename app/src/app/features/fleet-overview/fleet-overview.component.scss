@@ -1,0 +1,23 @@
+.admin-sidebar {
+  bottom: 0;
+  display: none;
+  left: 0;
+  position: fixed;
+  top: 0;
+}
+
+@media (min-width: 768px) {
+  .admin-sidebar {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 5.75rem;
+  }
+
+  .admin-sidebar-signout {
+    bottom: 1.25rem;
+    left: 1.25rem;
+    position: absolute;
+    right: 1.25rem;
+  }
+}

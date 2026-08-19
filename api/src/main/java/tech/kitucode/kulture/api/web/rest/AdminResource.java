@@ -3,17 +3,28 @@ package tech.kitucode.kulture.api.web.rest;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.kitucode.kulture.api.service.FleetOverviewService;
 import tech.kitucode.kulture.api.service.VehicleService;
-import tech.kitucode.kulture.api.web.rest.dto.FleetAlertResponse;
+import tech.kitucode.kulture.api.service.RouteService;
+import tech.kitucode.kulture.api.service.MediaService;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import tech.kitucode.kulture.api.web.rest.dto.FleetOverviewResponse;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleDetailResponse;
+import tech.kitucode.kulture.api.web.rest.dto.VehicleAdminUpdateRequest;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleSummaryResponse;
+import tech.kitucode.kulture.api.web.rest.dto.PageResponse;
+import tech.kitucode.kulture.api.web.rest.dto.RouteResponse;
+import tech.kitucode.kulture.api.web.rest.dto.RouteAdminRequest;
+import tech.kitucode.kulture.api.web.rest.dto.MediaResponse;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -21,10 +32,38 @@ public class AdminResource {
 
 	private final FleetOverviewService fleetOverviewService;
 	private final VehicleService vehicleService;
+	private final RouteService routeService;
+	private final MediaService mediaService;
 
-	public AdminResource(FleetOverviewService fleetOverviewService, VehicleService vehicleService) {
+	public AdminResource(FleetOverviewService fleetOverviewService, VehicleService vehicleService, RouteService routeService, MediaService mediaService) {
 		this.fleetOverviewService = fleetOverviewService;
 		this.vehicleService = vehicleService;
+		this.routeService = routeService;
+		this.mediaService = mediaService;
+	}
+
+	@GetMapping("/vehicles/{vehicleId}/images")
+	public List<MediaResponse> vehicleImages(@PathVariable UUID vehicleId) { return mediaService.adminImages(vehicleId); }
+
+	@PostMapping(value = "/vehicles/{vehicleId}/images", consumes = "multipart/form-data")
+	public MediaResponse uploadVehicleImage(@PathVariable UUID vehicleId, @RequestPart("file") MultipartFile file) { return mediaService.upload(vehicleId, file); }
+
+	@DeleteMapping("/vehicles/{vehicleId}/images/{imageId}")
+	public void deleteVehicleImage(@PathVariable UUID vehicleId, @PathVariable UUID imageId) { mediaService.delete(vehicleId, imageId); }
+
+	@GetMapping("/routes")
+	public PageResponse<RouteResponse> routes(@RequestParam(defaultValue = "") String q, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "6") int size) {
+		return routeService.adminList(q, page, size);
+	}
+
+	@PostMapping("/routes")
+	public RouteResponse createRoute(@RequestBody RouteAdminRequest request) {
+		return routeService.create(request);
+	}
+
+	@PutMapping("/routes/{routeId}")
+	public RouteResponse updateRoute(@PathVariable UUID routeId, @RequestBody RouteAdminRequest request) {
+		return routeService.update(routeId, request);
 	}
 
 	@GetMapping("/fleet/overview")
@@ -37,18 +76,36 @@ public class AdminResource {
 		return vehicleService.pendingVerification();
 	}
 
+	@GetMapping("/vehicles")
+	public PageResponse<VehicleSummaryResponse> vehicles(
+		@RequestParam(defaultValue = "") String q,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "6") int size
+	) {
+		return vehicleService.adminList(q, page, size);
+	}
+
+	@GetMapping("/vehicles/{vehicleId}")
+	public VehicleDetailResponse vehicle(@PathVariable UUID vehicleId) {
+		return vehicleService.getForAdmin(vehicleId);
+	}
+
+	@PostMapping("/vehicles")
+	public VehicleDetailResponse createVehicle(@RequestBody VehicleAdminUpdateRequest request) {
+		return vehicleService.createByAdmin(request);
+	}
+
 	@PostMapping("/vehicles/{vehicleId}/verify")
 	public VehicleDetailResponse verify(@PathVariable UUID vehicleId) {
 		return vehicleService.verify(vehicleId);
 	}
 
-	@GetMapping("/alerts")
-	public List<FleetAlertResponse> alerts() {
-		return fleetOverviewService.alerts();
+	@PutMapping("/vehicles/{vehicleId}")
+	public VehicleDetailResponse updateVehicle(
+		@PathVariable UUID vehicleId,
+		@RequestBody VehicleAdminUpdateRequest request
+	) {
+		return vehicleService.updateByAdmin(vehicleId, request);
 	}
 
-	@PatchMapping("/alerts/{alertId}/resolve")
-	public FleetAlertResponse resolveAlert(@PathVariable UUID alertId) {
-		return fleetOverviewService.resolve(alertId);
-	}
 }

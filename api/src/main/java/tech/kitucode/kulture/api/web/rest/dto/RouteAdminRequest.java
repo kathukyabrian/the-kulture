@@ -1,0 +1,11 @@
+package tech.kitucode.kulture.api.web.rest.dto;
+
+public record RouteAdminRequest(
+	String routeNumber,
+	String name,
+	String origin,
+	String destination,
+	String description,
+	boolean active
+) {
+}

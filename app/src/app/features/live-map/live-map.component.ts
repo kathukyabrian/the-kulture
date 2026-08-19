@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
 import { VehicleSummaryResponse } from '../../core/api.models';
+import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
+import { ConfirmationService } from '../../core/confirmation.service';
 
 @Component({
   selector: 'app-live-map',
@@ -21,7 +23,12 @@ export class LiveMapComponent implements OnInit {
 
   private readonly searchTerms = new Subject<string>();
 
-  constructor(private readonly api: KultureApiService) {}
+  constructor(
+    private readonly api: KultureApiService,
+    private readonly auth: AuthService,
+    private readonly router: Router,
+    private readonly confirmation: ConfirmationService
+  ) {}
 
   ngOnInit(): void {
     this.loadVehicles();
@@ -59,6 +66,12 @@ export class LiveMapComponent implements OnInit {
 
   closeMenu(): void {
     this.menuOpen = false;
+  }
+
+  async logout(): Promise<void> {
+    if (!(await this.confirmation.confirm({ title: 'Sign out?', message: 'You will need to enter your access details to return.', confirmLabel: 'Sign out' }))) return;
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
   }
 
   @HostListener('document:keydown.escape')

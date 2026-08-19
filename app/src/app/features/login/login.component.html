@@ -1,0 +1,64 @@
+<main class="relative min-h-dvh overflow-hidden bg-background text-ink">
+  <div class="absolute inset-0 map-grid"></div>
+  <div class="absolute inset-0 bg-[linear-gradient(120deg,rgba(19,19,19,0.74),rgba(19,19,19,0.96))]"></div>
+
+  <section class="relative mx-auto grid min-h-dvh max-w-6xl items-center gap-10 px-5 py-10 lg:grid-cols-[0.9fr_1.1fr]">
+    <div class="max-w-xl text-center lg:text-left">
+      <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">The Kulture</p>
+      <h1 class="mt-4 font-display text-5xl font-black italic uppercase leading-none text-primary md:text-7xl">
+        Nganya control
+      </h1>
+      <div class="mx-auto mt-7 flex max-w-md items-center justify-center gap-3 font-mono text-xs uppercase tracking-wider text-secondary lg:mx-0 lg:justify-start">
+        <span class="material-symbols-outlined text-lg">verified_user</span>
+        <span>Protected access</span>
+      </div>
+    </div>
+
+    <form class="rounded-lg border border-primary/20 bg-surface/90 p-5 shadow-neon backdrop-blur-xl rim-light md:p-7" (ngSubmit)="submit()">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted">Secure access</p>
+          <h2 class="mt-2 font-display text-3xl font-black uppercase text-ink">Sign in</h2>
+        </div>
+        <span class="grid h-12 w-12 place-items-center rounded border border-secondary/30 text-secondary">
+          <span class="material-symbols-outlined">passkey</span>
+        </span>
+      </div>
+
+      <label class="mt-7 block">
+        <span class="font-mono text-xs uppercase text-muted">Email</span>
+        <input
+          name="email"
+          [(ngModel)]="email"
+          class="mt-2 h-12 w-full rounded border border-outline bg-background px-4 font-mono text-sm text-ink outline-none focus:border-primary"
+          autocomplete="username"
+          type="email"
+          required
+        />
+      </label>
+
+      <label class="mt-4 block">
+        <span class="font-mono text-xs uppercase text-muted">Access code</span>
+        <input
+          name="password"
+          [(ngModel)]="password"
+          class="mt-2 h-12 w-full rounded border border-outline bg-background px-4 font-mono text-sm text-ink outline-none focus:border-secondary"
+          autocomplete="current-password"
+          type="password"
+          required
+        />
+      </label>
+
+      <p *ngIf="error" class="mt-4 rounded border border-danger/40 bg-surface-high p-3 font-mono text-xs uppercase text-danger">{{ error }}</p>
+
+      <button type="submit" class="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded bg-primary px-4 font-mono text-xs font-bold uppercase text-[#31003f] active:scale-[0.99]">
+        <span class="material-symbols-outlined">login</span>
+        <span>Sign in</span>
+      </button>
+
+      <p class="mt-5 text-center font-mono text-[11px] uppercase tracking-wider text-muted">
+        Your destination is selected automatically
+      </p>
+    </form>
+  </section>
+</main>

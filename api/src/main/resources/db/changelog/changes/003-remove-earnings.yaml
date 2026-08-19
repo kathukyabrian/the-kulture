@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-remove-vehicle-earnings
+      author: codex
+      changes:
+        - dropColumn:
+            tableName: vehicles
+            columnName: earnings_today

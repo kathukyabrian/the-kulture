@@ -14,7 +14,7 @@ The design system is named **Nairobi Nights**. It uses a dark charcoal base with
 
 - Primary: electric purple for brand, active route paths, and primary actions.
 - Secondary: lime green for available, on-time, and positive states.
-- Tertiary: hot pink for live pings, alerts, and energetic accents.
+- Tertiary: hot pink for live pings and energetic accents.
 - Surfaces: dark charcoal tiers with rim-light borders instead of heavy shadows.
 - Typography: Anybody for display/headlines, Hanken Grotesk for body text, JetBrains Mono for route numbers, plates, timestamps, and telemetry.
 
@@ -22,8 +22,8 @@ Reference screens in the zip:
 
 - `live_map_search`: commuter map, route search, nearby nganya bottom sheet, bottom navigation, contextual action button.
 - `nganya_profile`: vehicle profile, route badge, live tracking state, feature stats, crew rating, gallery.
-- `fleet_overview`: admin dashboard with active vehicles, alerts, revenue, live map, pending verifications, crew performance, fleet distribution.
-- `crew_dashboard`: crew mobile dashboard with go-live control, route status, earnings, quick actions, and current location preview.
+- `fleet_overview`: admin dashboard with active vehicles, live map, pending verifications, crew performance, and fleet distribution.
+- `crew_dashboard`: crew mobile dashboard with go-live control, route status, quick actions, and current location preview.
 
 The Angular implementation should translate these static HTML references into reusable Angular components and Tailwind styles while preserving the mobile app feel.
 
@@ -59,7 +59,7 @@ The Angular implementation should translate these static HTML references into re
 
 - **Commuter:** searches routes, views nearby nganyas, checks live status, opens vehicle profiles.
 - **Crew:** turns tracking on/off, updates route status, views commuter interest and daily numbers.
-- **Fleet/Admin:** monitors vehicles, reviews pending verifications, checks alerts and basic performance.
+- **Fleet/Admin:** monitors vehicles, reviews pending verifications, and checks basic performance.
 
 ## MVP Functional Scope
 
@@ -74,7 +74,7 @@ The Angular implementation should translate these static HTML references into re
 
 - Toggle live tracking state for a vehicle.
 - View current route assignment.
-- View simple day metrics such as watchers, earnings, and fleet position.
+- View simple activity metrics such as watchers and fleet position.
 - Trigger quick actions such as route update, pit stop, and crew chat as UI placeholders in the first pass.
 
 ### Fleet/Admin Experience
@@ -135,17 +135,6 @@ Keep the schema small and easy to evolve.
 - `speed_kph`
 - `recorded_at`
 
-### `fleet_alert`
-
-- `id`
-- `vehicle_id`
-- `type`
-- `message`
-- `severity`
-- `resolved`
-- `created_at`
-- `updated_at`
-
 ## API Surface
 
 Use simple JSON APIs. Avoid nested workflows until the MVP is working.
@@ -171,8 +160,6 @@ Use simple JSON APIs. Avoid nested workflows until the MVP is working.
 - `GET /api/admin/fleet/overview`
 - `GET /api/admin/vehicles/pending-verification`
 - `POST /api/admin/vehicles/{vehicleId}/verify`
-- `GET /api/admin/alerts`
-- `PATCH /api/admin/alerts/{alertId}/resolve`
 
 ## Frontend Structure
 
@@ -205,7 +192,7 @@ Initial routes:
 
 ### Phase 2: Core Data and APIs
 
-- Add route, vehicle, crew member, vehicle location, and alert entities.
+- Add route, vehicle, crew member, and vehicle location entities.
 - Add repositories and simple services.
 - Add read APIs for routes, vehicles, nearby vehicles, and search.
 - Seed a small Nairobi-flavored demo dataset through Liquibase.
@@ -235,7 +222,6 @@ Initial routes:
 ## Non-Goals for the First Pass
 
 - Complex authentication and permissions.
-- Payment processing.
 - Full realtime WebSocket infrastructure.
 - Advanced route optimization.
 - Native mobile packaging.

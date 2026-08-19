@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import tech.kitucode.kulture.api.domain.enumerations.OccupancyStatus;
 import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
+import tech.kitucode.kulture.api.domain.enumerations.ListingState;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -45,6 +46,16 @@ public class Vehicle {
 	@Column(nullable = false)
 	private boolean verified;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "listing_state", nullable = false)
+	private ListingState listingState;
+
+	@Column(name = "sound_system", nullable = false)
+	private String soundSystem;
+
+	@Column(name = "custom_features", nullable = false)
+	private String customFeatures;
+
 	@Column(name = "wifi_available", nullable = false)
 	private boolean wifiAvailable;
 
@@ -56,9 +67,6 @@ public class Vehicle {
 
 	@Column(name = "watcher_count", nullable = false)
 	private int watcherCount;
-
-	@Column(name = "earnings_today", nullable = false)
-	private int earningsToday;
 
 	@Column(name = "fleet_position", nullable = false)
 	private int fleetPosition;

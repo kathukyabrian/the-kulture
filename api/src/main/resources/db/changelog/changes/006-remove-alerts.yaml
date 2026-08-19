@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-remove-alerts
+      author: codex
+      changes:
+        - dropTable:
+            tableName: fleet_alerts
+            cascadeConstraints: true
