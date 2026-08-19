@@ -19,6 +19,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
 	List<Vehicle> findByListingStateOrderByNameAsc(ListingState listingState);
 	List<Vehicle> findByListingStateAndRouteIdOrderByNameAsc(ListingState listingState, UUID routeId);
+	List<Vehicle> findByStatusAndListingStateAndRouteIdOrderByNameAsc(VehicleStatus status, ListingState listingState, UUID routeId);
 
 	List<Vehicle> findByVerifiedFalseOrderByUpdatedAtDesc();
 
@@ -34,6 +35,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 		select v from Vehicle v
 		join v.route r
 		where v.listingState = tech.kitucode.kulture.api.domain.enumerations.ListingState.ACTIVE
+		  and v.status = tech.kitucode.kulture.api.domain.enumerations.VehicleStatus.ONLINE
 		  and (lower(v.name) like lower(concat('%', :query, '%'))
 		   or lower(v.plateNumber) like lower(concat('%', :query, '%'))
 		   or lower(r.routeNumber) like lower(concat('%', :query, '%'))

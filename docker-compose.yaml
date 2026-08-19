@@ -1,0 +1,17 @@
+version: "2"
+services:
+  nginx:
+    image: kitunda/the-kulture-web:1.0.0
+    ports:
+      - 80:80
+    restart: on-failure
+  api:
+    image: kitunda/the-kulture-api:1.0.0
+    restart: on-failure
+    environment:
+      - TZ=Africa/Nairobi
+      - APP_MEDIA_STORAGE_DIRECTORY=/uploads
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./uploads:/uploads

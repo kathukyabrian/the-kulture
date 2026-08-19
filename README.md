@@ -23,3 +23,5 @@ npm start
 Angular runs at `http://localhost:4200` and proxies `/api` requests to `http://localhost:8080`.
 
 The backend also allows CORS from `localhost:4200` and `127.0.0.1:4200` for local development.
+
+To simulate an online nganya moving along its saved route, see [simulator/README.md](simulator/README.md).

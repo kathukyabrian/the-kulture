@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, tap, timer } from 'rxjs';
 import { MediaResponse, RouteResponse, VehicleDetailResponse, VehicleSummaryResponse } from '../../core/api.models';
 import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
@@ -25,6 +26,8 @@ export class NganyaProfileComponent implements OnInit {
   readonly crewPreview: boolean;
   readonly travellerPreview: boolean;
   readonly backPath: string;
+  private readonly destroyRef = inject(DestroyRef);
+  private imageVehicleId: string | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -50,21 +53,28 @@ export class NganyaProfileComponent implements OnInit {
             this.error = 'Missing vehicle id.';
             return of(null);
           }
-          const request = this.adminPreview ? this.api.getAdminVehicle(id) : this.api.getVehicle(id);
-          return request.pipe(
-            catchError(() => {
-              this.error = 'Could not load this nganya from the backend.';
-              return of(null);
-            })
-          );
-        })
+          return timer(0, 5000).pipe(switchMap(() => {
+            const request = this.adminPreview ? this.api.getAdminVehicle(id) : this.api.getVehicle(id);
+            return request.pipe(
+              tap(() => (this.error = '')),
+              catchError(() => {
+                this.error = 'Could not refresh this nganya from the backend.';
+                return of(this.vehicle);
+              })
+            );
+          }));
+        }),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((vehicle) => {
+        const routeChanged = vehicle && this.vehicle?.route.id !== vehicle.route.id;
         this.vehicle = vehicle;
-        this.mapRoutes = vehicle ? [vehicle.route] : [];
+        if (vehicle && (routeChanged || !this.mapRoutes.length)) this.mapRoutes = [vehicle.route];
+        if (!vehicle) this.mapRoutes = [];
         this.mapVehicles = vehicle ? [this.toMapVehicle(vehicle)] : [];
         this.loading = false;
-        if (vehicle) {
+        if (vehicle && this.imageVehicleId !== vehicle.id) {
+          this.imageVehicleId = vehicle.id;
           const imagesRequest = this.adminPreview ? this.api.getAdminVehicleImages(vehicle.id) : this.api.getVehicleImages(vehicle.id);
           imagesRequest.subscribe({ next: (images) => (this.images = images), error: () => (this.images = []) });
         }

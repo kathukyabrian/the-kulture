@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap, timer } from 'rxjs';
 import { RouteResponse, VehicleSummaryResponse } from '../../core/api.models';
 import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
@@ -24,6 +25,7 @@ export class LiveMapComponent implements OnInit {
   menuOpen = false;
 
   private readonly searchTerms = new Subject<string>();
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private readonly api: KultureApiService,
@@ -33,7 +35,7 @@ export class LiveMapComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadVehicles();
+    timer(0, 5000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadVehicles(false));
     this.api.getRoutes().subscribe({ next: routes => this.routes = routes });
     this.searchTerms
       .pipe(
@@ -46,6 +48,7 @@ export class LiveMapComponent implements OnInit {
         switchMap((query) => {
           const trimmed = query.trim();
           return (trimmed ? this.api.searchVehicles(trimmed) : this.api.getVehicles()).pipe(
+            tap(() => (this.error = '')),
             catchError(() => {
               this.error = 'Could not reach the backend API.';
               return of([]);
@@ -89,10 +92,12 @@ export class LiveMapComponent implements OnInit {
     return vehicle.status === 'ONLINE' ? `${vehicle.etaMinutes} min` : 'Offline';
   }
 
-  private loadVehicles(): void {
-    this.api
-      .getVehicles()
+  private loadVehicles(showLoading = true): void {
+    if (showLoading) this.loading = true;
+    const trimmed = this.query.trim();
+    (trimmed ? this.api.searchVehicles(trimmed) : this.api.getVehicles())
       .pipe(
+        tap(() => (this.error = '')),
         catchError(() => {
           this.error = 'Could not reach the backend API.';
           return of([]);

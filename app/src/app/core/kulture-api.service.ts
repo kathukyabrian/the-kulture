@@ -8,10 +8,11 @@ import {
   VehicleSummaryResponse
 } from './api.models';
 import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class KultureApiService {
-  private readonly baseUrl = '/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private readonly http: HttpClient) {}
 

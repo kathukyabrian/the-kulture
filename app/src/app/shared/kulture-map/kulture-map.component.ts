@@ -15,23 +15,24 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Output() geometryChange = new EventEmitter<RouteGeometry | null>();
   private map?: Map;
   private draft: [number, number][] = [];
+  private viewportInitialized = false;
 
   ngAfterViewInit(): void {
     const configured = (window as Window & { KULTURE_MAP_STYLE_URL?: string }).KULTURE_MAP_STYLE_URL;
     maplibregl.setWorkerUrl(new URL('maplibre-gl-worker.mjs', document.baseURI).toString());
     this.map = new maplibregl.Map({ container: this.container.nativeElement, style: configured || 'https://tiles.openfreemap.org/styles/liberty', center: [36.8219, -1.2921], zoom: 10.5 });
     this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-    this.map.on('style.load', () => { this.installLayers(); this.sync(); });
-    this.map.on('click', event => { if (!this.editable) return; this.draft.push([event.lngLat.lng, event.lngLat.lat]); this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(); });
+    this.map.on('style.load', () => { this.installLayers(); this.sync(true); });
+    this.map.on('click', event => { if (!this.editable) return; this.draft.push([event.lngLat.lng, event.lngLat.lat]); this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(true); });
   }
 
-  ngOnChanges(changes: SimpleChanges): void { if (changes['geometry']) this.draft = this.geometry?.coordinates.map(point => [...point] as [number, number]) ?? []; this.sync(); }
+  ngOnChanges(changes: SimpleChanges): void { if (changes['geometry']) this.draft = this.geometry?.coordinates.map(point => [...point] as [number, number]) ?? []; this.sync(!this.viewportInitialized || !!changes['routes'] || !!changes['geometry']); }
   ngOnDestroy(): void { this.map?.remove(); }
   undo(): void { this.draft.pop(); this.emitDraft(); }
   clear(): void { this.draft = []; this.emitDraft(); }
-  resetToNairobi(): void { this.map?.easeTo({ center: [36.8219, -1.2921], zoom: 12, duration: 500 }); }
+  resetToNairobi(): void { this.map?.easeTo({ center: [36.8219, -1.2921], zoom: 12, duration: 500 }); this.viewportInitialized = true; }
 
-  private emitDraft(): void { this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(); }
+  private emitDraft(): void { this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(true); }
   private installLayers(): void {
     if (!this.map || this.map.getSource('routes')) return;
     this.map.addSource('routes', { type: 'geojson', data: this.routeCollection() });
@@ -42,11 +43,12 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map.on('click', 'vehicle-points', event => { const feature = event.features?.[0]; if (!feature || feature.geometry.type !== 'Point') return; new maplibregl.Popup().setLngLat(feature.geometry.coordinates as [number, number]).setHTML(`<strong>${feature.properties?.['name'] ?? 'Nganya'}</strong><br>${feature.properties?.['status'] ?? ''}`).addTo(this.map!); });
   }
 
-  private sync(): void {
+  private sync(fitViewport = false): void {
     if (!this.map?.isStyleLoaded()) return;
     (this.map.getSource('routes') as GeoJSONSource | undefined)?.setData(this.routeCollection());
     (this.map.getSource('vehicles') as GeoJSONSource | undefined)?.setData(this.vehicleCollection());
-    const points: [number, number][] = [...this.routes.flatMap(route => route.geometry?.coordinates ?? []), ...(this.geometry?.coordinates ?? []), ...this.vehicles.flatMap(vehicle => vehicle.latestLocation ? [[Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] as [number, number]] : [])];
+    if (!fitViewport) return;
+    const points: [number, number][] = [...this.routes.flatMap(route => route.geometry?.coordinates ?? []), ...(this.geometry?.coordinates ?? []), ...this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [[Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] as [number, number]] : [])];
     if (!points.length) {
       this.resetToNairobi();
     } else if (points.length === 1) {
@@ -55,8 +57,9 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       const bounds = points.reduce((value, point) => value.extend(point), new maplibregl.LngLatBounds(points[0], points[0]));
       this.map.fitBounds(bounds as LngLatBoundsLike, { padding: 55, maxZoom: 15, duration: 500 });
     }
+    this.viewportInitialized = true;
   }
 
   private routeCollection(): FeatureCollection<LineString> { const geometries = [...this.routes.flatMap(route => route.geometry ? [{ geometry: route.geometry, name: route.name }] : []), ...(this.geometry ? [{ geometry: this.geometry, name: 'Draft route' }] : [])]; return { type: 'FeatureCollection', features: geometries.map(item => ({ type: 'Feature', properties: { name: item.name }, geometry: item.geometry })) }; }
-  private vehicleCollection(): FeatureCollection<Point> { return { type: 'FeatureCollection', features: this.vehicles.flatMap(vehicle => vehicle.latestLocation ? [{ type: 'Feature' as const, properties: { id: vehicle.id, name: vehicle.name, status: vehicle.status }, geometry: { type: 'Point' as const, coordinates: [Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] } }] : []) }; }
+  private vehicleCollection(): FeatureCollection<Point> { return { type: 'FeatureCollection', features: this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [{ type: 'Feature' as const, properties: { id: vehicle.id, name: vehicle.name, status: vehicle.status }, geometry: { type: 'Point' as const, coordinates: [Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] } }] : []) }; }
 }

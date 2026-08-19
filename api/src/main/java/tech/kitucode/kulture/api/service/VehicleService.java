@@ -50,14 +50,14 @@ public class VehicleService {
 	}
 
 	public List<VehicleSummaryResponse> list() {
-		return vehicleRepository.findByListingStateOrderByNameAsc(ListingState.ACTIVE).stream()
+		return vehicleRepository.findByStatusAndListingStateOrderByNameAsc(VehicleStatus.ONLINE, ListingState.ACTIVE).stream()
 			.map(this::toSummary)
 			.toList();
 	}
 
 	public List<VehicleSummaryResponse> list(UUID routeId) {
 		if (routeId == null) return list();
-		return vehicleRepository.findByListingStateAndRouteIdOrderByNameAsc(ListingState.ACTIVE, routeId).stream()
+		return vehicleRepository.findByStatusAndListingStateAndRouteIdOrderByNameAsc(VehicleStatus.ONLINE, ListingState.ACTIVE, routeId).stream()
 			.map(this::toSummary)
 			.toList();
 	}
