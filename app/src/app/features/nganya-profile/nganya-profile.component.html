@@ -1,12 +1,13 @@
 <main class="min-h-dvh bg-background pb-20 text-ink">
   <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-outline/50 bg-background/80 px-5 backdrop-blur-xl">
-    <a [routerLink]="backPath" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" [attr.aria-label]="adminPreview ? 'Back to admin dashboard' : 'Back to map'">
+    <a [routerLink]="backPath" class="grid h-11 w-11 place-items-center rounded border border-primary/30 text-primary" aria-label="Back">
       <span class="material-symbols-outlined">arrow_back</span>
     </a>
     <h1 class="font-display text-xl font-black uppercase text-primary">The Kulture</h1>
-    <button type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign out">
+    <button *ngIf="auth.signedIn(); else profileSignIn" type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign out">
       <span class="material-symbols-outlined">logout</span>
     </button>
+    <ng-template #profileSignIn><a routerLink="/login" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign in"><span class="material-symbols-outlined">login</span></a></ng-template>
   </header>
 
   <p *ngIf="loading" class="mx-5 mt-5 rounded border border-outline bg-surface p-4 font-mono text-xs uppercase text-muted">Loading backend data...</p>
@@ -61,6 +62,22 @@
           <span class="font-semibold">{{ crew.displayName }}</span>
           <span class="font-mono text-xs uppercase text-muted">{{ crew.role }} · {{ crew.rating }}</span>
         </div>
+      </div>
+    </div>
+
+    <div *ngIf="vehicle.status === 'ONLINE'" class="overflow-hidden rounded-lg bg-surface rim-light md:col-span-2">
+      <div class="flex flex-col gap-2 border-b border-outline/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Live location</p>
+          <h3 class="mt-1 font-display text-2xl font-black uppercase">{{ vehicle.name }} on route {{ vehicle.route.routeNumber }}</h3>
+        </div>
+        <p *ngIf="vehicle.latestLocation; else awaitingLocation" class="font-mono text-xs text-muted">
+          {{ vehicle.latestLocation.latitude }}, {{ vehicle.latestLocation.longitude }} · {{ vehicle.latestLocation.recordedAt | date:'medium' }}
+        </p>
+        <ng-template #awaitingLocation><p class="font-mono text-xs uppercase text-tertiary">Awaiting current location</p></ng-template>
+      </div>
+      <div class="relative h-[360px] w-full">
+        <app-kulture-map class="absolute inset-0" [routes]="mapRoutes" [vehicles]="mapVehicles" />
       </div>
     </div>
 

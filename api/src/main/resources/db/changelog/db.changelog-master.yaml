@@ -13,3 +13,7 @@ databaseChangeLog:
       file: db/changelog/changes/006-remove-alerts.yaml
   - include:
       file: db/changelog/changes/007-users-and-crew-assignments.yaml
+  - include:
+      file: db/changelog/changes/008-traveller-preferences.yaml
+  - include:
+      file: db/changelog/changes/009-route-geometry.yaml

@@ -11,11 +11,12 @@ import { AdminDashboardPageComponent } from './pages/admin-dashboard-page.compon
 import { AdminNganyasPageComponent } from './pages/admin-nganyas-page.component';
 import { AdminRoutesPageComponent } from './pages/admin-routes-page.component';
 import { AdminUsersPageComponent } from './pages/admin-users-page.component';
+import { KultureMapComponent } from '../../shared/kulture-map/kulture-map.component';
 
 @Component({
   selector: 'app-fleet-overview',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AdminDashboardPageComponent, AdminNganyasPageComponent, AdminRoutesPageComponent, AdminUsersPageComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminDashboardPageComponent, AdminNganyasPageComponent, AdminRoutesPageComponent, AdminUsersPageComponent, KultureMapComponent],
   templateUrl: './fleet-overview.component.html',
   styleUrl: './fleet-overview.component.scss'
 })
@@ -94,8 +95,8 @@ export class FleetOverviewComponent implements OnInit {
 
   searchRoutes(): void { this.routePage = 1; this.loadRoutePage(); }
   changeRoutePage(page: number): void { this.routePage = Math.min(Math.max(page, 1), this.routePageCount); this.loadRoutePage(); }
-  createRoute(): void { this.editingRouteId = null; this.routeForm = { routeNumber: '', name: '', origin: '', destination: '', description: '', active: true }; }
-  editRoute(route: RouteResponse): void { this.editingRouteId = route.id; this.routeForm = { routeNumber: route.routeNumber, name: route.name, origin: route.origin, destination: route.destination, description: route.description, active: route.active }; }
+  createRoute(): void { this.editingRouteId = null; this.routeForm = { routeNumber: '', name: '', origin: '', destination: '', description: '', active: true, geometry: null }; }
+  editRoute(route: RouteResponse): void { this.editingRouteId = route.id; this.routeForm = { routeNumber: route.routeNumber, name: route.name, origin: route.origin, destination: route.destination, description: route.description, active: route.active, geometry: route.geometry }; }
   cancelRouteEdit(): void { this.editingRouteId = null; this.routeForm = null; }
 
   async saveRoute(): Promise<void> {

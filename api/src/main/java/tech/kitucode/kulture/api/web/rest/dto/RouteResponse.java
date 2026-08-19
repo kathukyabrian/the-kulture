@@ -1,6 +1,7 @@
 package tech.kitucode.kulture.api.web.rest.dto;
 
 import java.util.UUID;
+import tools.jackson.databind.JsonNode;
 
 public record RouteResponse(
 	UUID id,
@@ -9,6 +10,7 @@ public record RouteResponse(
 	String origin,
 	String destination,
 	String description,
-	boolean active
+	boolean active,
+	JsonNode geometry
 ) {
 }

@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-route-geometry
+      author: codex
+      changes:
+        - addColumn:
+            tableName: routes
+            columns:
+              - column: { name: geometry, type: text }

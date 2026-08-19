@@ -55,6 +55,13 @@ public class VehicleService {
 			.toList();
 	}
 
+	public List<VehicleSummaryResponse> list(UUID routeId) {
+		if (routeId == null) return list();
+		return vehicleRepository.findByListingStateAndRouteIdOrderByNameAsc(ListingState.ACTIVE, routeId).stream()
+			.map(this::toSummary)
+			.toList();
+	}
+
 	public List<VehicleSummaryResponse> search(String query) {
 		if (query == null || query.isBlank()) {
 			return list();

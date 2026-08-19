@@ -7,7 +7,7 @@ import {
   OccupancyStatus,
   VehicleSummaryResponse
 } from './api.models';
-import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse } from './api.models';
+import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
 
 @Injectable({ providedIn: 'root' })
 export class KultureApiService {
@@ -18,6 +18,8 @@ export class KultureApiService {
   getVehicles() {
     return this.http.get<VehicleSummaryResponse[]>(`${this.baseUrl}/vehicles`);
   }
+
+  getVehiclesByRoute(routeId: string) { return this.http.get<VehicleSummaryResponse[]>(`${this.baseUrl}/vehicles`, { params: { routeId } }); }
 
   searchVehicles(query: string) {
     return this.http.get<VehicleSummaryResponse[]>(`${this.baseUrl}/vehicles/search`, {
@@ -94,6 +96,10 @@ export class KultureApiService {
 
   getAssignedCrewVehicle() { return this.http.get<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles`); }
   getCrewContext() { return this.http.get<CrewContextResponse>(`${this.baseUrl}/crew/me`); }
+  getTravellerContext() { return this.http.get<TravellerContextResponse>(`${this.baseUrl}/traveller/me`); }
+  setTravellerDefaultRoute(routeId: string) { return this.http.put<TravellerContextResponse>(`${this.baseUrl}/traveller/default-route`, { routeId }); }
+  startTravellerSampling(routeId: string) { return this.http.post<TravellerContextResponse>(`${this.baseUrl}/traveller/sampling`, { routeId }); }
+  stopTravellerSampling() { return this.http.delete<TravellerContextResponse>(`${this.baseUrl}/traveller/sampling`); }
   updateOccupancy(vehicleId: string, occupancyStatus: OccupancyStatus) { return this.http.patch<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles/${vehicleId}/occupancy`, { occupancyStatus }); }
   updateLocation(vehicleId: string, latitude: number, longitude: number, speedKph: number) { return this.http.post<VehicleDetailResponse>(`${this.baseUrl}/crew/vehicles/${vehicleId}/location`, { latitude, longitude, speedKph }); }
 

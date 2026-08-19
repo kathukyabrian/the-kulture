@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-traveller-route-preferences
+      author: codex
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column: { name: default_route_id, type: uuid }
+              - column: { name: temporary_route_id, type: uuid }
+              - column: { name: sampling_enabled, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: users
+            baseColumnNames: default_route_id
+            referencedTableName: routes
+            referencedColumnNames: id
+            constraintName: fk_users_default_route
+        - addForeignKeyConstraint:
+            baseTableName: users
+            baseColumnNames: temporary_route_id
+            referencedTableName: routes
+            referencedColumnNames: id
+            constraintName: fk_users_temporary_route

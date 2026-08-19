@@ -1,6 +1,7 @@
 package tech.kitucode.kulture.api.config;
 
 import java.util.List;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,9 +21,11 @@ public class SecurityConfiguration {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(csrf -> csrf.disable())
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/password/setup", "/api/auth/password/forgot", "/api/auth/password/reset", "/api/routes/**", "/api/vehicles/**", "/api/media/**").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/password/setup", "/api/auth/password/forgot", "/api/auth/password/reset").permitAll()
+				.requestMatchers("/api/routes/**", "/api/vehicles/**", "/api/media/**").permitAll()
 				.requestMatchers("/api/admin/**").hasRole("ADMIN")
 				.requestMatchers("/api/crew/**").hasRole("CREW")
+				.requestMatchers("/api/traveller/**").hasRole("TRAVELLER")
 				.anyRequest().authenticated())
 			.exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> response.sendError(401)))
 			.build();

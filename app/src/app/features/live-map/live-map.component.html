@@ -1,10 +1,5 @@
 <main class="relative min-h-dvh overflow-hidden bg-background text-ink">
-  <div class="absolute inset-0 map-grid"></div>
-  <svg class="absolute inset-0 h-full w-full opacity-90" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M42 620 C120 500 142 358 224 296 C286 250 318 180 360 96" fill="none" stroke="#ecb2ff" stroke-width="4" stroke-linecap="round" class="drop-shadow-[0_0_10px_rgba(236,178,255,0.8)]" />
-    <path d="M20 210 C104 260 168 236 226 182 C276 135 326 152 382 188" fill="none" stroke="#a7ffb3" stroke-width="3" stroke-dasharray="10 9" stroke-linecap="round" />
-    <path d="M94 760 C132 646 230 602 294 508 C330 455 344 380 372 326" fill="none" stroke="#ffb2bf" stroke-width="2" stroke-dasharray="5 8" stroke-linecap="round" />
-  </svg>
+  <app-kulture-map class="absolute inset-0" [routes]="routes" [vehicles]="vehicles" />
 
   <header class="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between border-b border-outline/50 bg-background/70 px-5 backdrop-blur-xl">
     <button
@@ -18,9 +13,8 @@
       <span class="material-symbols-outlined">{{ menuOpen ? 'close' : 'menu' }}</span>
     </button>
     <a routerLink="/" class="font-display text-2xl font-black italic uppercase text-primary">The Kulture</a>
-    <button type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign out">
-      <span class="material-symbols-outlined">logout</span>
-    </button>
+    <button *ngIf="auth.signedIn(); else headerSignIn" type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign out"><span class="material-symbols-outlined">logout</span></button>
+    <ng-template #headerSignIn><a routerLink="/login" class="grid h-11 w-11 place-items-center rounded border border-secondary/30 text-secondary" aria-label="Sign in"><span class="material-symbols-outlined">login</span></a></ng-template>
   </header>
 
   <button
@@ -37,6 +31,7 @@
     class="fixed left-5 top-20 z-40 w-[min(22rem,calc(100vw-2.5rem))] rounded border border-primary/30 bg-surface/95 p-3 shadow-neon backdrop-blur-xl"
   >
     <nav class="grid gap-2">
+      <a *ngIf="auth.user()?.role === 'traveller'" routerLink="/traveller" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-secondary/20 bg-surface-high/70 px-3 font-mono text-xs uppercase text-secondary"><span class="material-symbols-outlined">dashboard</span><span>My dashboard</span></a>
       <a routerLink="/" (click)="closeMenu()" class="flex min-h-12 items-center gap-3 rounded border border-primary/20 bg-surface-high/70 px-3 font-mono text-xs uppercase text-primary">
         <span class="material-symbols-outlined">map</span>
         <span>Live Map</span>
@@ -49,10 +44,11 @@
         <span class="material-symbols-outlined text-primary">badge</span>
         <span>{{ vehicles[0] ? vehicles[0].name : 'Nganya Profile' }}</span>
       </a>
-      <button type="button" (click)="logout()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
+      <button *ngIf="auth.signedIn()" type="button" (click)="logout()" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink">
         <span class="material-symbols-outlined text-secondary">logout</span>
         <span>Sign Out</span>
       </button>
+      <a *ngIf="!auth.signedIn()" routerLink="/login" class="flex min-h-12 items-center gap-3 rounded border border-outline/70 bg-surface-high/70 px-3 font-mono text-xs uppercase text-ink"><span class="material-symbols-outlined text-secondary">login</span><span>Sign In</span></a>
     </nav>
   </aside>
 
@@ -69,22 +65,6 @@
     </label>
   </section>
 
-  <a
-    *ngFor="let vehicle of vehicles; let index = index"
-    [routerLink]="['/nganyas', vehicle.id]"
-    class="absolute z-10"
-    [ngClass]="[
-      index === 0 ? 'left-[28%] top-[45%]' : '',
-      index === 1 ? 'right-[20%] top-[27%]' : '',
-      index === 2 ? 'left-[48%] top-[67%]' : ''
-    ]"
-  >
-    <span class="relative block h-4 w-4 rounded-full bg-tertiary-strong live-ping"></span>
-    <span class="mt-3 block whitespace-nowrap rounded border border-primary/40 bg-surface/85 px-2 py-1 font-mono text-xs uppercase text-primary backdrop-blur">
-      [ {{ vehicle.routeNumber }} ] {{ vehicle.name }}
-    </span>
-  </a>
-
   <section class="fixed bottom-20 left-0 right-0 z-20 rounded-t-xl border-t border-primary/30 bg-surface/90 px-5 pb-5 pt-3 shadow-neon backdrop-blur-xl md:bottom-6 md:left-6 md:right-auto md:w-[420px] md:rounded-xl md:border">
     <div class="mx-auto mb-4 h-1 w-12 rounded-full bg-outline"></div>
     <div class="mb-4 flex items-start justify-between gap-4">
@@ -92,7 +72,7 @@
         <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Live tracking active</p>
         <h1 class="font-display text-3xl font-black uppercase text-ink">Nearby Nganyas</h1>
       </div>
-      <button type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-primary/40 text-primary" aria-label="Sign out">
+      <button *ngIf="auth.signedIn()" type="button" (click)="logout()" class="grid h-11 w-11 place-items-center rounded border border-primary/40 text-primary" aria-label="Sign out">
         <span class="material-symbols-outlined">logout</span>
       </button>
     </div>

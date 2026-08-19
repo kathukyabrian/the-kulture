@@ -1,4 +1,5 @@
 package tech.kitucode.kulture.api.web.rest.dto;
+import tools.jackson.databind.JsonNode;
 
 public record RouteAdminRequest(
 	String routeNumber,
@@ -6,6 +7,7 @@ public record RouteAdminRequest(
 	String origin,
 	String destination,
 	String description,
-	boolean active
+	boolean active,
+	JsonNode geometry
 ) {
 }

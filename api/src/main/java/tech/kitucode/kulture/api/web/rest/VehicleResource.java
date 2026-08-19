@@ -23,8 +23,8 @@ public class VehicleResource {
 	}
 
 	@GetMapping
-	public List<VehicleSummaryResponse> list() {
-		return vehicleService.list();
+	public List<VehicleSummaryResponse> list(@RequestParam(required = false) UUID routeId) {
+		return vehicleService.list(routeId);
 	}
 
 	@GetMapping("/search")

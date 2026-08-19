@@ -3,6 +3,8 @@ package tech.kitucode.kulture.api.service;
 import java.util.List;
 import java.util.UUID;
 import java.time.Instant;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +21,11 @@ import tech.kitucode.kulture.api.web.rest.dto.PageResponse;
 public class RouteService {
 
 	private final RouteRepository routeRepository;
+	private final ObjectMapper objectMapper;
 
-	public RouteService(RouteRepository routeRepository) {
+	public RouteService(RouteRepository routeRepository, ObjectMapper objectMapper) {
 		this.routeRepository = routeRepository;
+		this.objectMapper = objectMapper;
 	}
 
 	public List<RouteResponse> list() {
@@ -62,6 +66,22 @@ public class RouteService {
 		}
 		boolean exists = id == null ? routeRepository.existsByRouteNumberIgnoreCase(request.routeNumber().trim()) : routeRepository.existsByRouteNumberIgnoreCaseAndIdNot(request.routeNumber().trim(), id);
 		if (exists) throw new ResponseStatusException(HttpStatus.CONFLICT, "Route number is already in use");
+		validateGeometry(request.geometry());
+	}
+
+	private void validateGeometry(JsonNode geometry) {
+		if (geometry == null || geometry.isNull()) return;
+		if (!"LineString".equals(geometry.path("type").asText()) || !geometry.path("coordinates").isArray() || geometry.path("coordinates").size() < 2) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Geometry must be a GeoJSON LineString with at least two coordinates");
+		JsonNode previous = null;
+		boolean distinct = false;
+		for (JsonNode coordinate : geometry.path("coordinates")) {
+			if (!coordinate.isArray() || coordinate.size() != 2 || !coordinate.get(0).isNumber() || !coordinate.get(1).isNumber()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Each coordinate must contain longitude and latitude");
+			double longitude = coordinate.get(0).asDouble(), latitude = coordinate.get(1).asDouble();
+			if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Route coordinates are outside WGS84 bounds");
+			if (previous != null && !previous.equals(coordinate)) distinct = true;
+			previous = coordinate;
+		}
+		if (!distinct) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Route geometry requires at least two distinct coordinates");
 	}
 
 	private void apply(Route route, RouteAdminRequest request) {
@@ -71,6 +91,7 @@ public class RouteService {
 		route.setDestination(request.destination().trim());
 		route.setDescription(request.description() == null ? "" : request.description().trim());
 		route.setActive(request.active());
+		route.setGeometry(request.geometry() == null || request.geometry().isNull() ? null : request.geometry().toString());
 		route.setUpdatedAt(Instant.now());
 	}
 
@@ -87,7 +108,14 @@ public class RouteService {
 			route.getOrigin(),
 			route.getDestination(),
 			route.getDescription(),
-			route.isActive()
+			route.isActive(),
+			parseGeometry(route.getGeometry())
 		);
+	}
+
+	private JsonNode parseGeometry(String geometry) {
+		if (geometry == null || geometry.isBlank()) return null;
+		try { return objectMapper.readTree(geometry); }
+		catch (Exception exception) { throw new IllegalStateException("Stored route geometry is invalid", exception); }
 	}
 }

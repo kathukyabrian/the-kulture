@@ -1,6 +1,7 @@
 export type VehicleStatus = 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
 export type OccupancyStatus = 'LOW' | 'MEDIUM' | 'FULL';
 export type ListingState = 'ACTIVE' | 'HIDDEN' | 'SUSPENDED';
+export interface RouteGeometry { type: 'LineString'; coordinates: [number, number][]; }
 
 export interface RouteResponse {
   id: string;
@@ -10,6 +11,7 @@ export interface RouteResponse {
   destination: string;
   description: string;
   active: boolean;
+  geometry: RouteGeometry | null;
 }
 
 export interface RouteAdminRequest {
@@ -19,6 +21,7 @@ export interface RouteAdminRequest {
   destination: string;
   description: string;
   active: boolean;
+  geometry: RouteGeometry | null;
 }
 
 export interface LocationResponse {
@@ -101,6 +104,7 @@ export type UserStatus = 'INVITED' | 'ACTIVE' | 'SUSPENDED';
 export interface UserResponse { id: string; name: string; email: string; phoneNumber: string | null; role: AccountRole; status: UserStatus; assignmentId: string | null; vehicleId: string | null; vehicleName: string | null; assignmentRole: 'DRIVER' | 'CONDUCTOR' | null; createdAt: string; }
 export interface AuthUserResponse { id: string; displayName: string; email: string; role: 'admin' | 'crew' | 'traveller'; }
 export interface CrewContextResponse { user: AuthUserResponse; assignment: { id: string; role: 'DRIVER' | 'CONDUCTOR'; startedAt: string } | null; vehicle: VehicleDetailResponse | null; }
+export interface TravellerContextResponse { user: AuthUserResponse; defaultRoute: RouteResponse | null; temporaryRoute: RouteResponse | null; activeRoute: RouteResponse | null; samplingEnabled: boolean; }
 
 export interface PageResponse<T> {
   items: T[];

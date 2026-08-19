@@ -35,6 +35,9 @@ public class Route {
 	@Column(nullable = false)
 	private boolean active;
 
+	@Column(columnDefinition = "text")
+	private String geometry;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 

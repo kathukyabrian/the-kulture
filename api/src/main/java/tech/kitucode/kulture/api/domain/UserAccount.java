@@ -19,6 +19,9 @@ public class UserAccount {
 	@Column(name = "password_hash") private String passwordHash;
 	@Enumerated(EnumType.STRING) @Column(nullable = false) private UserStatus status;
 	@Column(name = "email_verified_at") private Instant emailVerifiedAt;
+	@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "default_route_id") private Route defaultRoute;
+	@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "temporary_route_id") private Route temporaryRoute;
+	@Column(name = "sampling_enabled", nullable = false) private boolean samplingEnabled;
 	@Column(name = "created_at", nullable = false) private Instant createdAt;
 	@Column(name = "updated_at", nullable = false) private Instant updatedAt;
 }

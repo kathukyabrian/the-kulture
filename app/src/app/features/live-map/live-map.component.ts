@@ -3,20 +3,22 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
-import { VehicleSummaryResponse } from '../../core/api.models';
+import { RouteResponse, VehicleSummaryResponse } from '../../core/api.models';
 import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
 import { ConfirmationService } from '../../core/confirmation.service';
+import { KultureMapComponent } from '../../shared/kulture-map/kulture-map.component';
 
 @Component({
   selector: 'app-live-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, KultureMapComponent],
   templateUrl: './live-map.component.html'
 })
 export class LiveMapComponent implements OnInit {
   query = '';
   vehicles: VehicleSummaryResponse[] = [];
+  routes: RouteResponse[] = [];
   loading = true;
   error = '';
   menuOpen = false;
@@ -25,13 +27,14 @@ export class LiveMapComponent implements OnInit {
 
   constructor(
     private readonly api: KultureApiService,
-    private readonly auth: AuthService,
+    readonly auth: AuthService,
     private readonly router: Router,
     private readonly confirmation: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.loadVehicles();
+    this.api.getRoutes().subscribe({ next: routes => this.routes = routes });
     this.searchTerms
       .pipe(
         debounceTime(250),

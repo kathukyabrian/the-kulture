@@ -18,6 +18,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 	List<Vehicle> findByStatusAndListingStateOrderByNameAsc(VehicleStatus status, ListingState listingState);
 
 	List<Vehicle> findByListingStateOrderByNameAsc(ListingState listingState);
+	List<Vehicle> findByListingStateAndRouteIdOrderByNameAsc(ListingState listingState, UUID routeId);
 
 	List<Vehicle> findByVerifiedFalseOrderByUpdatedAtDesc();
 
