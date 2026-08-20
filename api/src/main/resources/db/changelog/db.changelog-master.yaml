@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changes/008-traveller-preferences.yaml
   - include:
       file: db/changelog/changes/009-route-geometry.yaml
+  - include:
+      file: db/changelog/changes/010-location-broadcasting.yaml

@@ -31,6 +31,15 @@ export interface LocationResponse {
   recordedAt: string;
 }
 
+export interface VehicleLocationEvent {
+  sampleId: string;
+  vehicleId: string;
+  latitude: number;
+  longitude: number;
+  speedKph: number;
+  recordedAt: string;
+}
+
 export interface CrewMemberResponse {
   id: string;
   displayName: string;

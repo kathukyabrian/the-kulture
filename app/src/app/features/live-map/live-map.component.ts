@@ -9,6 +9,7 @@ import { AuthService } from '../../core/auth.service';
 import { KultureApiService } from '../../core/kulture-api.service';
 import { ConfirmationService } from '../../core/confirmation.service';
 import { KultureMapComponent } from '../../shared/kulture-map/kulture-map.component';
+import { VehicleLocationEventsService } from '../../core/vehicle-location-events.service';
 
 @Component({
   selector: 'app-live-map',
@@ -31,11 +32,15 @@ export class LiveMapComponent implements OnInit {
     private readonly api: KultureApiService,
     readonly auth: AuthService,
     private readonly router: Router,
-    private readonly confirmation: ConfirmationService
+    private readonly confirmation: ConfirmationService,
+    private readonly locationEvents: VehicleLocationEventsService
   ) {}
 
   ngOnInit(): void {
-    timer(0, 5000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadVehicles(false));
+    timer(0, 30000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadVehicles(false));
+    this.locationEvents.stream().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
+      this.vehicles = this.vehicles.map(vehicle => vehicle.id === event.vehicleId ? { ...vehicle, latestLocation: { latitude: event.latitude, longitude: event.longitude, speedKph: event.speedKph, recordedAt: event.recordedAt } } : vehicle);
+    });
     this.api.getRoutes().subscribe({ next: routes => this.routes = routes });
     this.searchTerms
       .pipe(
@@ -88,6 +93,9 @@ export class LiveMapComponent implements OnInit {
   statusLabel(vehicle: VehicleSummaryResponse): string {
     if (vehicle.status === 'MAINTENANCE') {
       return 'Pit stop';
+    }
+    if (vehicle.status === 'ONLINE' && vehicle.latestLocation && Date.now() - new Date(vehicle.latestLocation.recordedAt).getTime() > 60000) {
+      return 'Stale';
     }
     return vehicle.status === 'ONLINE' ? `${vehicle.etaMinutes} min` : 'Offline';
   }

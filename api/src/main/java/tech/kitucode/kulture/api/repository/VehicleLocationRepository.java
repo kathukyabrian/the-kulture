@@ -8,4 +8,5 @@ import tech.kitucode.kulture.api.domain.VehicleLocation;
 public interface VehicleLocationRepository extends JpaRepository<VehicleLocation, UUID> {
 
 	Optional<VehicleLocation> findTopByVehicleIdOrderByRecordedAtDesc(UUID vehicleId);
+	boolean existsBySampleId(UUID sampleId);
 }

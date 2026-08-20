@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.kitucode.kulture.api.service.VehicleService;
 import tech.kitucode.kulture.api.service.UserService;
+import tech.kitucode.kulture.api.service.LocationBroadcastService;
+import tech.kitucode.kulture.api.web.rest.dto.LocationBatchRequest;
+import tech.kitucode.kulture.api.web.rest.dto.LocationBatchResponse;
 import tech.kitucode.kulture.api.web.rest.dto.LocationUpdateRequest;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleDetailResponse;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleStatusUpdateRequest;
@@ -22,10 +25,18 @@ public class CrewResource {
 
 	private final VehicleService vehicleService;
 	private final UserService userService;
+	private final LocationBroadcastService locations;
 
-	public CrewResource(VehicleService vehicleService, UserService userService) {
+	public CrewResource(VehicleService vehicleService, UserService userService, LocationBroadcastService locations) {
 		this.vehicleService = vehicleService;
 		this.userService = userService;
+		this.locations = locations;
+	}
+
+	@PostMapping("/{vehicleId}/locations")
+	public LocationBatchResponse updateLocations(@PathVariable UUID vehicleId, @Valid @RequestBody LocationBatchRequest request, org.springframework.security.core.Authentication auth) {
+		userService.requireAssignedVehicle(auth.getName(), vehicleId);
+		return locations.ingest(vehicleId, request);
 	}
 
 	@GetMapping

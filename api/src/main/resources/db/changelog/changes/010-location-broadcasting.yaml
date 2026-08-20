@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-location-broadcasting
+      author: codex
+      changes:
+        - addColumn:
+            tableName: vehicle_locations
+            columns:
+              - column: { name: sample_id, type: uuid }
+              - column: { name: session_id, type: uuid }
+              - column: { name: accuracy_meters, type: "numeric(8, 2)" }
+              - column: { name: heading_degrees, type: "numeric(6, 2)" }
+              - column: { name: received_at, type: timestamp with time zone }
+        - sql:
+            sql: UPDATE vehicle_locations SET sample_id = id, received_at = recorded_at WHERE sample_id IS NULL
+        - addNotNullConstraint: { tableName: vehicle_locations, columnName: sample_id, columnDataType: uuid }
+        - addNotNullConstraint: { tableName: vehicle_locations, columnName: received_at, columnDataType: timestamp with time zone }
+        - addUniqueConstraint: { tableName: vehicle_locations, columnNames: sample_id, constraintName: uk_vehicle_locations_sample_id }
+        - createIndex:
+            tableName: vehicle_locations
+            indexName: idx_vehicle_locations_vehicle_recorded
+            columns:
+              - column: { name: vehicle_id }
+              - column: { name: recorded_at, descending: true }
+        - createTable:
+            tableName: vehicle_latest_locations
+            columns:
+              - column: { name: vehicle_id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: sample_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: latitude, type: "numeric(10, 7)", constraints: { nullable: false } }
+              - column: { name: longitude, type: "numeric(10, 7)", constraints: { nullable: false } }
+              - column: { name: speed_kph, type: int, constraints: { nullable: false } }
+              - column: { name: accuracy_meters, type: "numeric(8, 2)" }
+              - column: { name: heading_degrees, type: "numeric(6, 2)" }
+              - column: { name: recorded_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: received_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addForeignKeyConstraint: { baseTableName: vehicle_latest_locations, baseColumnNames: vehicle_id, referencedTableName: vehicles, referencedColumnNames: id, constraintName: fk_vehicle_latest_locations_vehicle, onDelete: CASCADE }
+        - sql:
+            sql: |
+              INSERT INTO vehicle_latest_locations (vehicle_id, sample_id, latitude, longitude, speed_kph, recorded_at, received_at)
+              SELECT l.vehicle_id, l.sample_id, l.latitude, l.longitude, l.speed_kph, l.recorded_at, l.received_at
+              FROM vehicle_locations l
+              WHERE l.recorded_at = (SELECT MAX(x.recorded_at) FROM vehicle_locations x WHERE x.vehicle_id = l.vehicle_id)

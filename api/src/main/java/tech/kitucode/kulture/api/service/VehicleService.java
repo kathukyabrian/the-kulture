@@ -2,9 +2,11 @@ package tech.kitucode.kulture.api.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 import tech.kitucode.kulture.api.domain.enumerations.ListingState;
 import tech.kitucode.kulture.api.repository.CrewAssignmentRepository;
 import tech.kitucode.kulture.api.repository.VehicleLocationRepository;
+import tech.kitucode.kulture.api.repository.VehicleLatestLocationRepository;
 import tech.kitucode.kulture.api.repository.VehicleRepository;
 import tech.kitucode.kulture.api.web.rest.dto.CrewMemberResponse;
 import tech.kitucode.kulture.api.web.rest.dto.LocationResponse;
@@ -30,21 +33,26 @@ import tech.kitucode.kulture.api.web.rest.dto.PageResponse;
 
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 public class VehicleService {
+	private static final ZoneId API_TIME_ZONE = ZoneId.of("Africa/Nairobi");
 
 	private final VehicleRepository vehicleRepository;
 	private final VehicleLocationRepository locationRepository;
+	private final VehicleLatestLocationRepository latestLocationRepository;
 	private final CrewAssignmentRepository crewAssignmentRepository;
 	private final RouteService routeService;
 
 	public VehicleService(
 		VehicleRepository vehicleRepository,
 		VehicleLocationRepository locationRepository,
+		VehicleLatestLocationRepository latestLocationRepository,
 		CrewAssignmentRepository crewAssignmentRepository,
 		RouteService routeService
 	) {
 		this.vehicleRepository = vehicleRepository;
 		this.locationRepository = locationRepository;
+		this.latestLocationRepository = latestLocationRepository;
 		this.crewAssignmentRepository = crewAssignmentRepository;
 		this.routeService = routeService;
 	}
@@ -121,9 +129,13 @@ public class VehicleService {
 
 	@Transactional
 	public VehicleDetailResponse updateLocation(UUID vehicleId, LocationUpdateRequest request) {
+		log.info("Legacy location received vehicleId={} latitude={} longitude={} speedKph={}", vehicleId, request.latitude(), request.longitude(), request.speedKph());
 		Vehicle vehicle = findById(vehicleId);
 		vehicle.setStatus(VehicleStatus.ONLINE);
-		locationRepository.save(new VehicleLocation(vehicle, request.latitude(), request.longitude(), request.speedKph()));
+		VehicleLocation location = locationRepository.save(new VehicleLocation(vehicle, request.latitude(), request.longitude(), request.speedKph()));
+		var latest = latestLocationRepository.findById(vehicleId).orElseGet(() -> new tech.kitucode.kulture.api.domain.VehicleLatestLocation(vehicle));
+		latest.updateFrom(location);
+		latestLocationRepository.save(latest);
 		return getForAdmin(vehicleId);
 	}
 
@@ -264,12 +276,12 @@ public class VehicleService {
 	}
 
 	private LocationResponse latestLocation(UUID vehicleId) {
-		return locationRepository.findTopByVehicleIdOrderByRecordedAtDesc(vehicleId)
+		return latestLocationRepository.findById(vehicleId)
 			.map(location -> new LocationResponse(
 				location.getLatitude(),
 				location.getLongitude(),
 				location.getSpeedKph(),
-				location.getRecordedAt()
+				location.getRecordedAt().atZone(API_TIME_ZONE).toOffsetDateTime()
 			))
 			.orElse(null);
 	}

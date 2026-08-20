@@ -1,1 +1,113 @@
-<section class="mx-auto w-full max-w-7xl px-5 py-6"><div class="rounded-lg bg-surface p-5 rim-light"><div><p class="font-mono text-xs uppercase text-muted">Accounts</p><h2 class="mt-1 font-display text-2xl font-black uppercase text-primary">Users</h2></div><div class="mt-5 grid gap-3 md:grid-cols-4"><input [(ngModel)]="query" (keyup.enter)="load(true)" class="h-11 rounded border border-outline bg-background px-3" placeholder="Name, email or mobile"/><select [(ngModel)]="role" (ngModelChange)="load(true)" class="h-11 rounded bg-background px-3"><option value="">All account roles</option><option>ADMIN</option><option>CREW</option><option>TRAVELLER</option></select><select [(ngModel)]="status" (ngModelChange)="load(true)" class="h-11 rounded bg-background px-3"><option value="">All statuses</option><option>INVITED</option><option>ACTIVE</option><option>SUSPENDED</option></select><select [(ngModel)]="assignmentRole" (ngModelChange)="load(true)" class="h-11 rounded bg-background px-3"><option value="">All assignments</option><option>DRIVER</option><option>CONDUCTOR</option><option>UNASSIGNED</option></select></div><p *ngIf="error" class="mt-4 text-sm text-danger">{{ error }}</p><p *ngIf="loading" class="mt-4 font-mono text-xs uppercase text-muted">Loading users...</p><div class="mt-5 overflow-x-auto"><table class="w-full min-w-[850px] text-left text-sm"><thead class="font-mono text-xs uppercase text-muted"><tr><th class="p-3">User</th><th class="p-3">Mobile</th><th class="p-3">Role</th><th class="p-3">Status</th><th class="p-3">Current nganya</th><th class="p-3">Actions</th></tr></thead><tbody><tr *ngFor="let user of users" class="border-t border-outline/40"><td class="p-3"><strong>{{ user.name }}</strong><span class="block text-xs text-muted">{{ user.email }}</span></td><td class="p-3 font-mono">{{ user.phoneNumber || 'Needs reconciliation' }}</td><td class="p-3">{{ user.role }}<span *ngIf="user.assignmentRole" class="block text-xs text-secondary">{{ user.assignmentRole }}</span></td><td class="p-3">{{ user.status }}</td><td class="p-3">{{ user.vehicleName || 'Unassigned' }}</td><td class="p-3"><div class="flex gap-2"><button *ngIf="user.status === 'INVITED'" (click)="resend(user)" class="rounded border border-secondary px-3 py-2 text-xs text-secondary">Resend invite</button><button (click)="toggleStatus(user)" class="rounded border border-outline px-3 py-2 text-xs">{{ user.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend' }}</button></div></td></tr></tbody></table><p *ngIf="!loading && !users.length" class="p-8 text-center text-muted">No matching users</p></div><div class="mt-5 flex items-center justify-between"><span class="font-mono text-xs text-muted">{{ total }} users</span><div class="flex items-center gap-3"><button (click)="changePage(page - 1)" [disabled]="page === 1">‹</button><span>{{ page }} / {{ pageCount }}</span><button (click)="changePage(page + 1)" [disabled]="page === pageCount">›</button></div></div></div></section>
+<section class="mx-auto w-full max-w-7xl px-5 py-6">
+  <div class="rounded-lg bg-surface p-5 rim-light">
+    <div>
+      <p class="font-mono text-xs uppercase text-muted">Accounts</p>
+      <h2 class="mt-1 font-display text-2xl font-black uppercase text-primary">
+        Users
+      </h2>
+    </div>
+    <div class="mt-5 grid gap-3 md:grid-cols-4">
+      <input
+        [(ngModel)]="query"
+        (keyup.enter)="load(true)"
+        class="h-11 rounded border border-outline bg-background px-3"
+        placeholder="Name, email or mobile"
+      /><select
+        [(ngModel)]="role"
+        (ngModelChange)="load(true)"
+        class="h-11 rounded bg-background px-3"
+      >
+        <option value="">All account roles</option>
+        <option>ADMIN</option>
+        <option>CREW</option>
+		<option value="TRAVELLER">KULTURE</option></select
+      ><select
+        [(ngModel)]="status"
+        (ngModelChange)="load(true)"
+        class="h-11 rounded bg-background px-3"
+      >
+        <option value="">All statuses</option>
+        <option>INVITED</option>
+        <option>ACTIVE</option>
+        <option>SUSPENDED</option></select
+      ><select
+        [(ngModel)]="assignmentRole"
+        (ngModelChange)="load(true)"
+        class="h-11 rounded bg-background px-3"
+      >
+        <option value="">All assignments</option>
+        <option>DRIVER</option>
+        <option>CONDUCTOR</option>
+        <option>UNASSIGNED</option>
+      </select>
+    </div>
+    <p *ngIf="error" class="mt-4 text-sm text-danger">{{ error }}</p>
+    <p *ngIf="loading" class="mt-4 font-mono text-xs uppercase text-muted">
+      Loading users...
+    </p>
+    <div class="mt-5 overflow-x-auto">
+      <table class="w-full min-w-[850px] text-left text-sm">
+        <thead class="font-mono text-xs uppercase text-muted">
+          <tr>
+            <th class="p-3">User</th>
+            <th class="p-3">Mobile</th>
+            <th class="p-3">Role</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Current nganya</th>
+            <th class="p-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users" class="border-t border-outline/40">
+            <td class="p-3">
+              <strong>{{ user.name }}</strong
+              ><span class="block text-xs text-muted">{{ user.email }}</span>
+            </td>
+            <td class="p-3 font-mono">
+              {{ user.phoneNumber || "Needs reconciliation" }}
+            </td>
+            <td class="p-3">
+			  {{ user.role === 'TRAVELLER' ? 'KULTURE' : user.role
+              }}<span
+                *ngIf="user.assignmentRole"
+                class="block text-xs text-secondary"
+                >{{ user.assignmentRole }}</span
+              >
+            </td>
+            <td class="p-3">{{ user.status }}</td>
+            <td class="p-3">{{ user.vehicleName || "Unassigned" }}</td>
+            <td class="p-3">
+              <div class="flex gap-2">
+                <button
+                  *ngIf="user.status === 'INVITED'"
+                  (click)="resend(user)"
+                  class="rounded border border-secondary px-3 py-2 text-xs text-secondary"
+                >
+                  Resend invite</button
+                ><button
+                  (click)="toggleStatus(user)"
+                  class="rounded border border-outline px-3 py-2 text-xs"
+                >
+                  {{ user.status === "SUSPENDED" ? "Reactivate" : "Suspend" }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="!loading && !users.length" class="p-8 text-center text-muted">
+        No matching users
+      </p>
+    </div>
+    <div class="mt-5 flex items-center justify-between">
+      <span class="font-mono text-xs text-muted">{{ total }} users</span>
+      <div class="flex items-center gap-3">
+        <button (click)="changePage(page - 1)" [disabled]="page === 1">‹</button
+        ><span>{{ page }} / {{ pageCount }}</span
+        ><button (click)="changePage(page + 1)" [disabled]="page === pageCount">
+          ›
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
