@@ -20,6 +20,7 @@ export class NganyaProfileComponent implements OnInit {
   loading = true;
   error = '';
   images: MediaResponse[] = [];
+  currentCoverIndex = 0;
   mapRoutes: RouteResponse[] = [];
   mapVehicles: VehicleSummaryResponse[] = [];
   readonly adminPreview: boolean;
@@ -43,6 +44,9 @@ export class NganyaProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    timer(12000, 12000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.images.length > 1) this.currentCoverIndex = (this.currentCoverIndex + 1) % this.images.length;
+    });
     this.route.paramMap
       .pipe(
         switchMap((params) => {
@@ -76,7 +80,7 @@ export class NganyaProfileComponent implements OnInit {
         if (vehicle && this.imageVehicleId !== vehicle.id) {
           this.imageVehicleId = vehicle.id;
           const imagesRequest = this.adminPreview ? this.api.getAdminVehicleImages(vehicle.id) : this.api.getVehicleImages(vehicle.id);
-          imagesRequest.subscribe({ next: (images) => (this.images = images), error: () => (this.images = []) });
+          imagesRequest.subscribe({ next: (images) => { this.images = images; this.currentCoverIndex = 0; }, error: () => { this.images = []; this.currentCoverIndex = 0; } });
         }
       });
   }

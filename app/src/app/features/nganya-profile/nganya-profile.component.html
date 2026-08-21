@@ -16,8 +16,11 @@
   <ng-container *ngIf="vehicle as vehicle">
   <div *ngIf="adminPreview" class="border-b border-primary/20 bg-primary/10 px-5 py-2 text-center font-mono text-xs uppercase tracking-wider text-primary">Admin preview · Public profile view</div>
   <section class="relative min-h-[360px] overflow-hidden border-b border-outline">
-    <div class="absolute inset-0 map-grid"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"></div>
+    <ng-container *ngIf="images.length; else heroFallback">
+      <img *ngFor="let coverImage of images; let imageIndex = index" [src]="coverImage.url" alt="" class="absolute inset-0 h-full w-full object-cover transition-opacity duration-[2500ms] ease-in-out" [class.opacity-100]="imageIndex === currentCoverIndex" [class.opacity-0]="imageIndex !== currentCoverIndex" aria-hidden="true"/>
+    </ng-container>
+    <ng-template #heroFallback><div class="absolute inset-0 map-grid"></div></ng-template>
+    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/20"></div>
     <div class="absolute left-5 right-5 top-8 flex items-center justify-between">
       <span class="rounded bg-primary px-3 py-1 font-mono text-xs font-bold uppercase text-[#520071]">Route [ {{ vehicle.route.routeNumber }} ]</span>
       <span class="flex items-center gap-2 rounded border border-tertiary/40 bg-surface/80 px-3 py-1 font-mono text-xs uppercase text-tertiary">
