@@ -9,6 +9,7 @@ import {
 } from './api.models';
 import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
 import { environment } from '../../environments/environment';
+import { map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class KultureApiService {
@@ -86,9 +87,9 @@ export class KultureApiService {
   resendInvitation(userId: string) { return this.http.post<UserResponse>(`${this.baseUrl}/admin/users/${userId}/resend-invitation`, {}); }
   updateUserStatus(userId: string, status: UserStatus) { return this.http.patch<UserResponse>(`${this.baseUrl}/admin/users/${userId}/status`, { status }); }
 
-  getVehicleImages(vehicleId: string) { return this.http.get<MediaResponse[]>(`${this.baseUrl}/vehicles/${vehicleId}/images`); }
-  getAdminVehicleImages(vehicleId: string) { return this.http.get<MediaResponse[]>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images`); }
-  uploadVehicleImage(vehicleId: string, file: File) { const body = new FormData(); body.append('file', file); return this.http.post<MediaResponse>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images`, body); }
+  getVehicleImages(vehicleId: string) { return this.http.get<MediaResponse[]>(`${this.baseUrl}/vehicles/${vehicleId}/images`).pipe(map(images => images.map(image => this.withAbsoluteMediaUrl(image)))); }
+  getAdminVehicleImages(vehicleId: string) { return this.http.get<MediaResponse[]>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images`).pipe(map(images => images.map(image => this.withAbsoluteMediaUrl(image)))); }
+  uploadVehicleImage(vehicleId: string, file: File) { const body = new FormData(); body.append('file', file); return this.http.post<MediaResponse>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images`, body).pipe(map(image => this.withAbsoluteMediaUrl(image))); }
   deleteVehicleImage(vehicleId: string, imageId: string) { return this.http.delete<void>(`${this.baseUrl}/admin/vehicles/${vehicleId}/images/${imageId}`); }
 
   goLive(vehicleId: string) {
@@ -113,5 +114,11 @@ export class KultureApiService {
       status,
       occupancyStatus
     });
+  }
+
+  private withAbsoluteMediaUrl(image: MediaResponse): MediaResponse {
+    if (/^https?:\/\//i.test(image.url)) return image;
+    const apiOrigin = new URL(this.baseUrl, window.location.origin).origin;
+    return { ...image, url: new URL(image.url, apiOrigin).toString() };
   }
 }
