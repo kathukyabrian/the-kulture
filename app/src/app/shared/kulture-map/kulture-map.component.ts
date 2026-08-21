@@ -15,6 +15,7 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Output() geometryChange = new EventEmitter<RouteGeometry | null>();
   private map?: Map;
   private currentLocationMarker?: maplibregl.Marker;
+  private pulseAnimationFrame?: number;
   draft: [number, number][] = [];
   locating = false;
   locationError = '';
@@ -30,7 +31,7 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   ngOnChanges(changes: SimpleChanges): void { if (changes['geometry']) this.draft = this.geometry?.coordinates.map(point => [...point] as [number, number]) ?? []; this.sync(!this.viewportInitialized || !!changes['routes'] || !!changes['geometry']); }
-  ngOnDestroy(): void { this.currentLocationMarker?.remove(); this.map?.remove(); }
+  ngOnDestroy(): void { if (this.pulseAnimationFrame !== undefined) cancelAnimationFrame(this.pulseAnimationFrame); this.currentLocationMarker?.remove(); this.map?.remove(); }
   undo(): void { this.draft.pop(); this.emitDraft(); }
   clear(): void { this.draft = []; this.emitDraft(); }
   resetToNairobi(): void { this.map?.easeTo({ center: [36.8219, -1.2921], zoom: 12, duration: 500 }); this.viewportInitialized = true; }
@@ -61,7 +62,10 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map.addLayer({ id: 'draft-point-circles', type: 'circle', source: 'draft-points', paint: { 'circle-radius': 11, 'circle-color': '#131313', 'circle-stroke-color': '#ecb2ff', 'circle-stroke-width': 3 } });
     this.map.addLayer({ id: 'draft-point-labels', type: 'symbol', source: 'draft-points', layout: { 'text-field': ['get', 'label'], 'text-size': 12 }, paint: { 'text-color': '#ffffff' } });
     this.map.addSource('vehicles', { type: 'geojson', data: this.vehicleCollection() });
-    this.map.addLayer({ id: 'vehicle-points', type: 'circle', source: 'vehicles', paint: { 'circle-radius': 9, 'circle-color': '#a7ffb3', 'circle-stroke-color': '#131313', 'circle-stroke-width': 3 } });
+    const statusColor: maplibregl.ExpressionSpecification = ['case', ['boolean', ['get', 'stale'], false], '#ffb44a', '#a7ffb3'];
+    this.map.addLayer({ id: 'vehicle-pulse', type: 'circle', source: 'vehicles', paint: { 'circle-radius': 13, 'circle-color': statusColor, 'circle-opacity': 0.18 } });
+    this.map.addLayer({ id: 'vehicle-points', type: 'circle', source: 'vehicles', paint: { 'circle-radius': 8, 'circle-color': statusColor, 'circle-stroke-color': '#131313', 'circle-stroke-width': 3 } });
+    this.animateVehiclePulse();
     this.map.on('click', 'vehicle-points', event => { const feature = event.features?.[0]; if (!feature || feature.geometry.type !== 'Point') return; new maplibregl.Popup().setLngLat(feature.geometry.coordinates as [number, number]).setHTML(`<strong>${feature.properties?.['name'] ?? 'Nganya'}</strong><br>${feature.properties?.['status'] ?? ''}`).addTo(this.map!); });
   }
 
@@ -85,5 +89,13 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   private routeCollection(): FeatureCollection<LineString> { const geometries = [...this.routes.flatMap(route => route.geometry ? [{ geometry: route.geometry, name: route.name }] : []), ...(this.geometry ? [{ geometry: this.geometry, name: 'Draft route' }] : [])]; return { type: 'FeatureCollection', features: geometries.map(item => ({ type: 'Feature', properties: { name: item.name }, geometry: item.geometry })) }; }
   private draftPointCollection(): FeatureCollection<Point> { return { type: 'FeatureCollection', features: this.draft.map((coordinates, index) => ({ type: 'Feature', properties: { label: String(index + 1) }, geometry: { type: 'Point', coordinates } })) }; }
-  private vehicleCollection(): FeatureCollection<Point> { return { type: 'FeatureCollection', features: this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [{ type: 'Feature' as const, properties: { id: vehicle.id, name: vehicle.name, status: vehicle.status }, geometry: { type: 'Point' as const, coordinates: [Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] } }] : []) }; }
+  private animateVehiclePulse(): void {
+    if (!this.map?.getLayer('vehicle-pulse')) return;
+    const phase = (performance.now() % 1800) / 1800;
+    this.map.setPaintProperty('vehicle-pulse', 'circle-radius', 11 + phase * 6);
+    this.map.setPaintProperty('vehicle-pulse', 'circle-opacity', 0.24 * (1 - phase));
+    this.pulseAnimationFrame = requestAnimationFrame(() => this.animateVehiclePulse());
+  }
+
+  private vehicleCollection(): FeatureCollection<Point> { return { type: 'FeatureCollection', features: this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [{ type: 'Feature' as const, properties: { id: vehicle.id, name: vehicle.name, status: vehicle.status, stale: Date.now() - new Date(vehicle.latestLocation.recordedAt).getTime() > 60000 }, geometry: { type: 'Point' as const, coordinates: [Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] } }] : []) }; }
 }
