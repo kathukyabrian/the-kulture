@@ -16,6 +16,7 @@ services:
     environment:
       - TZ=Africa/Nairobi
       - APP_MEDIA_STORAGE_DIRECTORY=/uploads
+      - APP_ROUTING_ORS_API_KEY=eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjliM2Q2NTVkZDNiNTQxYjM4N2EyMzEzMmMwMTcyM2M1IiwiaCI6Im11cm11cjY0In0=
       - SERVER_SERVLET_SESSION_COOKIE_SAME_SITE=none
       - SERVER_SERVLET_SESSION_COOKIE_SECURE=true
     ports:

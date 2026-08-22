@@ -12,6 +12,7 @@ export interface RouteResponse {
   description: string;
   active: boolean;
   geometry: RouteGeometry | null;
+  waypoints: [number, number][] | null;
 }
 
 export interface RouteAdminRequest {
@@ -22,6 +23,13 @@ export interface RouteAdminRequest {
   description: string;
   active: boolean;
   geometry: RouteGeometry | null;
+  waypoints: [number, number][] | null;
+}
+
+export interface RouteCalculationResponse {
+  geometry: RouteGeometry;
+  distanceMeters: number;
+  durationSeconds: number;
 }
 
 export interface LocationResponse {

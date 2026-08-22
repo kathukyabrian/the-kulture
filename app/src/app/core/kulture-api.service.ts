@@ -7,7 +7,7 @@ import {
   OccupancyStatus,
   VehicleSummaryResponse
 } from './api.models';
-import { PageResponse, RouteAdminRequest, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
+import { PageResponse, RouteAdminRequest, RouteCalculationResponse, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
 import { environment } from '../../environments/environment';
 import { map } from 'rxjs';
 
@@ -77,6 +77,12 @@ export class KultureApiService {
 
   updateRoute(routeId: string, request: RouteAdminRequest) {
     return this.http.put<RouteResponse>(`${this.baseUrl}/admin/routes/${routeId}`, request);
+  }
+
+  calculateRoute(waypoints: [number, number][]) {
+    return this.http.post<RouteCalculationResponse>(`${this.baseUrl}/admin/routes/calculate`, {
+      waypoints: waypoints.map(([longitude, latitude]) => ({ longitude, latitude }))
+    });
   }
 
   getAdminUsers(query: string, role: AccountRole | '', status: UserStatus | '', assignmentRole: string, page: number, size: number) { return this.http.get<PageResponse<UserResponse>>(`${this.baseUrl}/admin/users`, { params: { q: query, role, status, assignmentRole, page, size } }); }

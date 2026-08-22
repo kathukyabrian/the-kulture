@@ -11,8 +11,10 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Input() routes: RouteResponse[] = [];
   @Input() vehicles: VehicleSummaryResponse[] = [];
   @Input() geometry: RouteGeometry | null = null;
+  @Input() waypoints: [number, number][] = [];
   @Input() editable = false;
   @Output() geometryChange = new EventEmitter<RouteGeometry | null>();
+  @Output() waypointsChange = new EventEmitter<[number, number][]>();
   private map?: Map;
   private currentLocationMarker?: maplibregl.Marker;
   private pulseAnimationFrame?: number;
@@ -28,10 +30,14 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map = new maplibregl.Map({ container: this.container.nativeElement, style: styleUrl, center: [36.8219, -1.2921], zoom: 10.5 });
     this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
     this.map.on('styledata', () => { this.installLayers(); this.sync(!this.viewportInitialized); });
-    this.map.on('click', event => { if (!this.editable) return; this.draft.push([event.lngLat.lng, event.lngLat.lat]); this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(false); });
+    this.map.on('click', event => { if (!this.editable) return; this.draft.push([event.lngLat.lng, event.lngLat.lat]); this.emitDraft(); });
   }
 
-  ngOnChanges(changes: SimpleChanges): void { if (changes['geometry']) this.draft = this.geometry?.coordinates.map(point => [...point] as [number, number]) ?? []; this.sync(!this.viewportInitialized || !!changes['routes'] || !!changes['geometry']); }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['waypoints']) this.draft = this.waypoints.map(point => [...point] as [number, number]);
+    const fitViewport = !this.viewportInitialized || (!this.editable && (!!changes['routes'] || !!changes['geometry'] || !!changes['waypoints']));
+    this.sync(fitViewport);
+  }
   ngOnDestroy(): void { if (this.pulseAnimationFrame !== undefined) cancelAnimationFrame(this.pulseAnimationFrame); this.currentLocationMarker?.remove(); this.map?.remove(); }
   undo(): void { this.draft.pop(); this.emitDraft(); }
   clear(): void { this.draft = []; this.emitDraft(); }
@@ -53,7 +59,7 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
   }
 
-  private emitDraft(): void { this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(false); }
+  private emitDraft(): void { this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.waypointsChange.emit(this.draft.map(point => [...point] as [number, number])); this.sync(false); }
   private installLayers(): void {
     if (!this.map || this.map.getSource('routes')) return;
     this.map.addSource('routes', { type: 'geojson', data: this.routeCollection() });

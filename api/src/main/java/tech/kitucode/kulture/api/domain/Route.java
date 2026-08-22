@@ -38,6 +38,9 @@ public class Route {
 	@Column(columnDefinition = "text")
 	private String geometry;
 
+	@Column(columnDefinition = "text")
+	private String waypoints;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 

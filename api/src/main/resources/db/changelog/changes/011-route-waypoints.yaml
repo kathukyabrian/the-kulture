@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-route-waypoints
+      author: codex
+      changes:
+        - addColumn:
+            tableName: routes
+            columns:
+              - column: { name: waypoints, type: text }

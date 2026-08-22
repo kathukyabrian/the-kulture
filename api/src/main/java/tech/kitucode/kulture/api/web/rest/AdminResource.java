@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tech.kitucode.kulture.api.service.FleetOverviewService;
 import tech.kitucode.kulture.api.service.VehicleService;
 import tech.kitucode.kulture.api.service.RouteService;
+import tech.kitucode.kulture.api.service.OpenRouteService;
 import tech.kitucode.kulture.api.service.MediaService;
 import tech.kitucode.kulture.api.service.UserService;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +27,8 @@ import tech.kitucode.kulture.api.web.rest.dto.VehicleSummaryResponse;
 import tech.kitucode.kulture.api.web.rest.dto.PageResponse;
 import tech.kitucode.kulture.api.web.rest.dto.RouteResponse;
 import tech.kitucode.kulture.api.web.rest.dto.RouteAdminRequest;
+import tech.kitucode.kulture.api.web.rest.dto.RouteCalculationRequest;
+import tech.kitucode.kulture.api.web.rest.dto.RouteCalculationResponse;
 import tech.kitucode.kulture.api.web.rest.dto.MediaResponse;
 import tech.kitucode.kulture.api.web.rest.dto.UserResponse;
 import tech.kitucode.kulture.api.web.rest.dto.InviteCrewRequest;
@@ -40,15 +43,22 @@ public class AdminResource {
 	private final FleetOverviewService fleetOverviewService;
 	private final VehicleService vehicleService;
 	private final RouteService routeService;
+	private final OpenRouteService routingService;
 	private final MediaService mediaService;
 	private final UserService userService;
 
-	public AdminResource(FleetOverviewService fleetOverviewService, VehicleService vehicleService, RouteService routeService, MediaService mediaService, UserService userService) {
+	public AdminResource(FleetOverviewService fleetOverviewService, VehicleService vehicleService, RouteService routeService, MediaService mediaService, UserService userService, OpenRouteService routingService) {
 		this.fleetOverviewService = fleetOverviewService;
 		this.vehicleService = vehicleService;
 		this.routeService = routeService;
+		this.routingService = routingService;
 		this.mediaService = mediaService;
 		this.userService = userService;
+	}
+
+	@PostMapping("/routes/calculate")
+	public RouteCalculationResponse calculateRoute(@RequestBody RouteCalculationRequest request) {
+		return routingService.calculate(request);
 	}
 
 	@GetMapping("/users")

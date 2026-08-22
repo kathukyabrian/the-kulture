@@ -11,6 +11,7 @@ public record RouteResponse(
 	String destination,
 	String description,
 	boolean active,
-	JsonNode geometry
+	JsonNode geometry,
+	JsonNode waypoints
 ) {
 }

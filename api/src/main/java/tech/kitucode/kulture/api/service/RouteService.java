@@ -67,6 +67,17 @@ public class RouteService {
 		boolean exists = id == null ? routeRepository.existsByRouteNumberIgnoreCase(request.routeNumber().trim()) : routeRepository.existsByRouteNumberIgnoreCaseAndIdNot(request.routeNumber().trim(), id);
 		if (exists) throw new ResponseStatusException(HttpStatus.CONFLICT, "Route number is already in use");
 		validateGeometry(request.geometry());
+		validateWaypoints(request.waypoints());
+	}
+
+	private void validateWaypoints(JsonNode waypoints) {
+		if (waypoints == null || waypoints.isNull()) return;
+		if (!waypoints.isArray() || waypoints.size() < 2 || waypoints.size() > 25) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Route requires between 2 and 25 waypoints");
+		for (JsonNode coordinate : waypoints) {
+			if (!coordinate.isArray() || coordinate.size() != 2 || !coordinate.get(0).isNumber() || !coordinate.get(1).isNumber()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Each waypoint must contain longitude and latitude");
+			double longitude = coordinate.get(0).asDouble(), latitude = coordinate.get(1).asDouble();
+			if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Route waypoints are outside WGS84 bounds");
+		}
 	}
 
 	private void validateGeometry(JsonNode geometry) {
@@ -92,6 +103,7 @@ public class RouteService {
 		route.setDescription(request.description() == null ? "" : request.description().trim());
 		route.setActive(request.active());
 		route.setGeometry(request.geometry() == null || request.geometry().isNull() ? null : request.geometry().toString());
+		route.setWaypoints(request.waypoints() == null || request.waypoints().isNull() ? null : request.waypoints().toString());
 		route.setUpdatedAt(Instant.now());
 	}
 
@@ -109,7 +121,8 @@ public class RouteService {
 			route.getDestination(),
 			route.getDescription(),
 			route.isActive(),
-			parseGeometry(route.getGeometry())
+			parseGeometry(route.getGeometry()),
+			parseGeometry(route.getWaypoints())
 		);
 	}
 

@@ -19,7 +19,8 @@ export class AuthService {
   login(email: string, password: string): Observable<AuthUser> { return this.http.post<AuthUser>(`${this.baseUrl}/auth/login`, { email, password }).pipe(tap((user) => this.store(user))); }
   register(request: { name: string; email: string; phoneNumber: string; password: string }): Observable<AuthUser> { return this.http.post<AuthUser>(`${this.baseUrl}/auth/register`, request); }
   setupPassword(token: string, password: string): Observable<void> { return this.http.post<void>(`${this.baseUrl}/auth/password/setup`, { token, password }); }
-  logout(): void { this.http.post<void>(`${this.baseUrl}/auth/logout`, {}).subscribe(); this.session.set(null); localStorage.removeItem(this.storageKey); }
+  logout(): void { this.http.post<void>(`${this.baseUrl}/auth/logout`, {}).subscribe(); this.clearSession(); }
+  clearSession(): void { this.session.set(null); localStorage.removeItem(this.storageKey); }
   defaultPath(role: UserRole): string { return ({ admin: '/fleet', crew: '/crew', traveller: '/traveller' } as Record<UserRole, string>)[role]; }
   canAccess(roles: UserRole[]): boolean { const user = this.session(); return !!user && roles.includes(user.role); }
   canAccessRoute(role: UserRole, path: string): boolean { if (path.startsWith('/fleet')) return role === 'admin'; if (path.startsWith('/crew')) return role === 'crew'; if (path.startsWith('/traveller')) return role === 'traveller'; return path === '/' || path.startsWith('/nganyas'); }

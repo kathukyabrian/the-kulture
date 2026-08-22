@@ -36,6 +36,9 @@ export class FleetOverviewComponent implements OnInit {
   routePageCount = 1;
   readonly routesPerPage = 9;
   savingRoute = false;
+  routingRoute = false;
+  routeCalculationMessage = '';
+  private routeCalculationSequence = 0;
   editing: VehicleDetailResponse | null = null;
   vehicleImages: MediaResponse[] = [];
   uploadingImage = false;
@@ -95,12 +98,53 @@ export class FleetOverviewComponent implements OnInit {
 
   searchRoutes(): void { this.routePage = 1; this.loadRoutePage(); }
   changeRoutePage(page: number): void { this.routePage = Math.min(Math.max(page, 1), this.routePageCount); this.loadRoutePage(); }
-  createRoute(): void { this.editingRouteId = null; this.routeForm = { routeNumber: '', name: '', origin: '', destination: '', description: '', active: true, geometry: null }; }
-  editRoute(route: RouteResponse): void { this.editingRouteId = route.id; this.routeForm = { routeNumber: route.routeNumber, name: route.name, origin: route.origin, destination: route.destination, description: route.description, active: route.active, geometry: route.geometry }; }
-  cancelRouteEdit(): void { this.editingRouteId = null; this.routeForm = null; }
+  createRoute(): void { this.editingRouteId = null; this.routeCalculationMessage = ''; this.routeForm = { routeNumber: '', name: '', origin: '', destination: '', description: '', active: true, geometry: null, waypoints: null }; }
+  editRoute(route: RouteResponse): void { this.editingRouteId = route.id; this.routeCalculationMessage = ''; const coordinates = route.geometry?.coordinates ?? []; const legacyWaypoints = coordinates.length > 1 ? this.sampleWaypoints(coordinates) : null; this.routeForm = { routeNumber: route.routeNumber, name: route.name, origin: route.origin, destination: route.destination, description: route.description, active: route.active, geometry: route.geometry, waypoints: route.waypoints ?? legacyWaypoints }; }
+  cancelRouteEdit(): void { this.routeCalculationSequence++; this.routingRoute = false; this.editingRouteId = null; this.routeForm = null; }
+
+  routeWaypointsChanged(waypoints: [number, number][]): void {
+    if (!this.routeForm) return;
+    this.routeForm.waypoints = waypoints.length ? waypoints : null;
+    this.routeForm.geometry = waypoints.length > 1 ? { type: 'LineString', coordinates: waypoints } : null;
+    this.routeCalculationMessage = '';
+    if (waypoints.length < 2) { this.routingRoute = false; return; }
+    this.calculateRoadRoute(waypoints);
+  }
+
+  followRouteRoads(): void {
+    if (!this.routeForm || this.routingRoute) return;
+    const source = this.routeForm.waypoints?.length ? this.routeForm.waypoints : this.routeForm.geometry?.coordinates ?? [];
+    const waypoints = this.sampleWaypoints(source);
+    if (waypoints.length < 2) { this.routeCalculationMessage = 'Choose at least two points first.'; return; }
+    this.routeForm.waypoints = waypoints;
+    this.calculateRoadRoute(waypoints);
+  }
+
+  private calculateRoadRoute(waypoints: [number, number][]): void {
+    const sequence = ++this.routeCalculationSequence;
+    this.routingRoute = true;
+    this.api.calculateRoute(waypoints).subscribe({
+      next: result => {
+        if (sequence !== this.routeCalculationSequence || !this.routeForm) return;
+        this.routeForm.geometry = result.geometry;
+        this.routingRoute = false;
+        this.routeCalculationMessage = `${(result.distanceMeters / 1000).toFixed(1)} km road route`;
+      },
+      error: () => {
+        if (sequence !== this.routeCalculationSequence) return;
+        this.routingRoute = false;
+        this.routeCalculationMessage = 'Could not follow roads. Check the points or routing configuration.';
+      }
+    });
+  }
+
+  private sampleWaypoints(coordinates: [number, number][]): [number, number][] {
+    if (coordinates.length <= 25) return coordinates.map(point => [...point] as [number, number]);
+    return Array.from({ length: 25 }, (_, index) => coordinates[Math.round(index * (coordinates.length - 1) / 24)]).map(point => [...point] as [number, number]);
+  }
 
   async saveRoute(): Promise<void> {
-    if (!this.routeForm) return;
+    if (!this.routeForm || this.routingRoute) return;
     const creating = !this.editingRouteId;
     if (!(await this.confirmation.confirm({ title: creating ? 'Create route?' : 'Save route?', message: `${this.routeForm.routeNumber} · ${this.routeForm.name} will be ${creating ? 'created' : 'updated'}.`, confirmLabel: creating ? 'Create' : 'Save' }))) return;
     this.savingRoute = true;
