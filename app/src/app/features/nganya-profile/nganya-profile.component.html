@@ -55,17 +55,14 @@
     </div>
 
     <div class="rounded-lg border border-secondary/20 bg-surface-high p-5 shadow-lime rim-light">
-      <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Crew rating</p>
-      <div class="mt-3 flex items-end justify-between">
-        <h3 class="font-display text-5xl font-black text-secondary">{{ rating(vehicle) }}</h3>
-        <span class="font-mono text-xs uppercase text-muted">Elite rank</span>
-      </div>
-      <div class="mt-5 space-y-3">
+      <p class="font-mono text-xs uppercase tracking-[0.18em] text-secondary">Crew</p>
+      <div *ngIf="vehicle.crew.length; else noCrew" class="mt-5 space-y-3">
         <div *ngFor="let crew of vehicle.crew" class="flex items-center justify-between border-t border-outline/60 pt-3">
           <span class="font-semibold">{{ crew.displayName }}</span>
-          <span class="font-mono text-xs uppercase text-muted">{{ crew.role }} · {{ crew.rating }}</span>
+          <span class="font-mono text-xs uppercase text-muted">{{ crew.role }}</span>
         </div>
       </div>
+      <ng-template #noCrew><p class="mt-5 text-sm text-muted">No crew assigned.</p></ng-template>
     </div>
 
     <div *ngIf="vehicle.status === 'ONLINE'" class="overflow-hidden rounded-lg bg-surface rim-light md:col-span-2">

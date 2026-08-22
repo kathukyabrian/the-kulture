@@ -102,14 +102,6 @@ export class NganyaProfileComponent implements OnInit {
     };
   }
 
-  rating(vehicle: VehicleDetailResponse): number {
-    if (!vehicle.crew.length) {
-      return 0;
-    }
-    const total = vehicle.crew.reduce((sum, crew) => sum + Number(crew.rating), 0);
-    return Math.round((total / vehicle.crew.length) * 10) / 10;
-  }
-
   async logout(): Promise<void> {
     if (!(await this.confirmation.confirm({ title: 'Sign out?', message: 'You will need to enter your access details to return.', confirmLabel: 'Sign out' }))) return;
     this.auth.logout();
