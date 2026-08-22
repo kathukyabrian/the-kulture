@@ -24,9 +24,10 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   ngAfterViewInit(): void {
     const configured = (window as Window & { KULTURE_MAP_STYLE_URL?: string }).KULTURE_MAP_STYLE_URL;
     maplibregl.setWorkerUrl(new URL('maplibre-gl-worker.mjs', document.baseURI).toString());
-    this.map = new maplibregl.Map({ container: this.container.nativeElement, style: configured || 'https://tiles.openfreemap.org/styles/liberty', center: [36.8219, -1.2921], zoom: 10.5 });
+    const styleUrl = configured || new URL('map-styles/liberty.json', document.baseURI).toString();
+    this.map = new maplibregl.Map({ container: this.container.nativeElement, style: styleUrl, center: [36.8219, -1.2921], zoom: 10.5 });
     this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-    this.map.on('style.load', () => { this.installLayers(); this.sync(true); });
+    this.map.on('styledata', () => { this.installLayers(); this.sync(!this.viewportInitialized); });
     this.map.on('click', event => { if (!this.editable) return; this.draft.push([event.lngLat.lng, event.lngLat.lat]); this.geometry = this.draft.length > 1 ? { type: 'LineString', coordinates: [...this.draft] } : null; this.geometryChange.emit(this.geometry); this.sync(false); });
   }
 
@@ -70,7 +71,7 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private sync(fitViewport = false): void {
-    if (!this.map?.isStyleLoaded()) return;
+    if (!this.map) return;
     (this.map.getSource('routes') as GeoJSONSource | undefined)?.setData(this.routeCollection());
     (this.map.getSource('draft-points') as GeoJSONSource | undefined)?.setData(this.draftPointCollection());
     (this.map.getSource('vehicles') as GeoJSONSource | undefined)?.setData(this.vehicleCollection());
