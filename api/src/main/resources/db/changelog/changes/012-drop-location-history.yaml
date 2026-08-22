@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-drop-location-history
+      author: codex
+      changes:
+        - dropTable:
+            tableName: vehicle_locations
+            cascadeConstraints: true

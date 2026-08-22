@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,11 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import tech.kitucode.kulture.api.domain.Vehicle;
 import tech.kitucode.kulture.api.domain.VehicleLatestLocation;
-import tech.kitucode.kulture.api.domain.VehicleLocation;
 import tech.kitucode.kulture.api.domain.enumerations.ListingState;
 import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 import tech.kitucode.kulture.api.repository.VehicleLatestLocationRepository;
-import tech.kitucode.kulture.api.repository.VehicleLocationRepository;
 import tech.kitucode.kulture.api.repository.VehicleRepository;
 import tech.kitucode.kulture.api.web.rest.dto.LocationBatchRequest;
 import tech.kitucode.kulture.api.web.rest.dto.LocationBatchResponse;
@@ -32,13 +32,11 @@ public class LocationBroadcastService {
 	private static final Duration MAX_CLOCK_SKEW = Duration.ofMinutes(2);
 	private static final ZoneId API_TIME_ZONE = ZoneId.of("Africa/Nairobi");
 	private final VehicleRepository vehicles;
-	private final VehicleLocationRepository history;
 	private final VehicleLatestLocationRepository latestLocations;
 	private final ApplicationEventPublisher events;
 
-	public LocationBroadcastService(VehicleRepository vehicles, VehicleLocationRepository history, VehicleLatestLocationRepository latestLocations, ApplicationEventPublisher events) {
+	public LocationBroadcastService(VehicleRepository vehicles, VehicleLatestLocationRepository latestLocations, ApplicationEventPublisher events) {
 		this.vehicles = vehicles;
-		this.history = history;
 		this.latestLocations = latestLocations;
 		this.events = events;
 	}
@@ -52,19 +50,18 @@ public class LocationBroadcastService {
 		List<UUID> duplicates = new ArrayList<>();
 		List<LocationBatchResponse.LocationRejection> rejected = new ArrayList<>();
 		VehicleLatestLocation latest = latestLocations.findById(vehicleId).orElseGet(() -> new VehicleLatestLocation(vehicle));
+		Set<UUID> seenSampleIds = new HashSet<>();
 		Instant now = Instant.now();
 
 		for (LocationSampleRequest sample : request.samples()) {
 			log.info("Location received vehicleId={} sessionId={} sampleId={} latitude={} longitude={} accuracyMeters={} speedKph={} headingDegrees={} recordedAt={}",
 				vehicleId, request.sessionId(), sample.sampleId(), sample.latitude(), sample.longitude(), sample.accuracyMeters(), sample.speedKph(), sample.headingDegrees(), sample.recordedAt());
-			if (history.existsBySampleId(sample.sampleId())) { duplicates.add(sample.sampleId()); continue; }
+			if (!seenSampleIds.add(sample.sampleId()) || sample.sampleId().equals(latest.getSampleId())) { duplicates.add(sample.sampleId()); continue; }
 			String reason = rejectionReason(sample, now, latest.getRecordedAt());
 			if (reason != null) { rejected.add(new LocationBatchResponse.LocationRejection(sample.sampleId(), reason)); continue; }
 
-			VehicleLocation location = new VehicleLocation(vehicle, sample.sampleId(), request.sessionId(), sample.latitude(), sample.longitude(), sample.speedKph(), sample.accuracyMeters(), sample.headingDegrees(), sample.recordedAt());
-			history.save(location);
 			accepted.add(sample.sampleId());
-			if (latest.getRecordedAt() == null || sample.recordedAt().isAfter(latest.getRecordedAt())) latest.updateFrom(location);
+			if (latest.getRecordedAt() == null || sample.recordedAt().isAfter(latest.getRecordedAt())) latest.update(sample.sampleId(), sample.latitude(), sample.longitude(), sample.speedKph(), sample.accuracyMeters(), sample.headingDegrees(), sample.recordedAt(), now);
 		}
 
 		if (latest.getRecordedAt() != null && accepted.contains(latest.getSampleId())) {

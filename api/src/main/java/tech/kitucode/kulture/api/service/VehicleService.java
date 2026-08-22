@@ -15,11 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 import tech.kitucode.kulture.api.domain.CrewAssignment;
 import tech.kitucode.kulture.api.domain.enumerations.OccupancyStatus;
 import tech.kitucode.kulture.api.domain.Vehicle;
-import tech.kitucode.kulture.api.domain.VehicleLocation;
 import tech.kitucode.kulture.api.domain.enumerations.VehicleStatus;
 import tech.kitucode.kulture.api.domain.enumerations.ListingState;
 import tech.kitucode.kulture.api.repository.CrewAssignmentRepository;
-import tech.kitucode.kulture.api.repository.VehicleLocationRepository;
 import tech.kitucode.kulture.api.repository.VehicleLatestLocationRepository;
 import tech.kitucode.kulture.api.repository.VehicleRepository;
 import tech.kitucode.kulture.api.web.rest.dto.CrewMemberResponse;
@@ -38,20 +36,17 @@ public class VehicleService {
 	private static final ZoneId API_TIME_ZONE = ZoneId.of("Africa/Nairobi");
 
 	private final VehicleRepository vehicleRepository;
-	private final VehicleLocationRepository locationRepository;
 	private final VehicleLatestLocationRepository latestLocationRepository;
 	private final CrewAssignmentRepository crewAssignmentRepository;
 	private final RouteService routeService;
 
 	public VehicleService(
 		VehicleRepository vehicleRepository,
-		VehicleLocationRepository locationRepository,
 		VehicleLatestLocationRepository latestLocationRepository,
 		CrewAssignmentRepository crewAssignmentRepository,
 		RouteService routeService
 	) {
 		this.vehicleRepository = vehicleRepository;
-		this.locationRepository = locationRepository;
 		this.latestLocationRepository = latestLocationRepository;
 		this.crewAssignmentRepository = crewAssignmentRepository;
 		this.routeService = routeService;
@@ -132,9 +127,9 @@ public class VehicleService {
 		log.info("Legacy location received vehicleId={} latitude={} longitude={} speedKph={}", vehicleId, request.latitude(), request.longitude(), request.speedKph());
 		Vehicle vehicle = findById(vehicleId);
 		vehicle.setStatus(VehicleStatus.ONLINE);
-		VehicleLocation location = locationRepository.save(new VehicleLocation(vehicle, request.latitude(), request.longitude(), request.speedKph()));
 		var latest = latestLocationRepository.findById(vehicleId).orElseGet(() -> new tech.kitucode.kulture.api.domain.VehicleLatestLocation(vehicle));
-		latest.updateFrom(location);
+		Instant now = Instant.now();
+		latest.update(UUID.randomUUID(), request.latitude(), request.longitude(), request.speedKph(), null, null, now, now);
 		latestLocationRepository.save(latest);
 		return getForAdmin(vehicleId);
 	}

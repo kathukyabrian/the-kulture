@@ -34,14 +34,14 @@ public class VehicleLatestLocation {
 		this.vehicleId = vehicle.getId();
 	}
 
-	public void updateFrom(VehicleLocation location) {
-		this.sampleId = location.getSampleId();
-		this.latitude = location.getLatitude();
-		this.longitude = location.getLongitude();
-		this.speedKph = location.getSpeedKph();
-		this.accuracyMeters = location.getAccuracyMeters();
-		this.headingDegrees = location.getHeadingDegrees();
-		this.recordedAt = location.getRecordedAt();
-		this.receivedAt = location.getReceivedAt();
+	public void update(UUID sampleId, BigDecimal latitude, BigDecimal longitude, int speedKph, BigDecimal accuracyMeters, BigDecimal headingDegrees, Instant recordedAt, Instant receivedAt) {
+		this.sampleId = sampleId;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.speedKph = speedKph;
+		this.accuracyMeters = accuracyMeters;
+		this.headingDegrees = headingDegrees;
+		this.recordedAt = recordedAt;
+		this.receivedAt = receivedAt;
 	}
 }

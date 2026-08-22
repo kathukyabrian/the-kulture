@@ -55,7 +55,7 @@ The API currently:
 
 - authenticates the crew session;
 - confirms that the crew member is assigned to the requested vehicle;
-- inserts each accepted sample into `vehicle_locations`;
+- overwrites the vehicle's row in `vehicle_latest_locations` when a newer sample arrives;
 - marks the vehicle `ONLINE`;
 - returns the full vehicle detail response.
 
@@ -73,12 +73,8 @@ Persistent device queue
         | HTTPS batch upload with retry
         v
 Spring Boot location ingest endpoint
-        |                 |
-        |                 +--> latest-location cache
-        v
-location history database
         |
-        +--> SSE update stream --> public maps
+        +--> latest-location database --> SSE update stream --> public maps
 ```
 
 ### 1. Collect coordinates
@@ -156,33 +152,17 @@ Server validation is authoritative. For every batch:
 2. Resolve the active crew assignment from the authenticated principal.
 3. Reject a `vehicleId` that is not the assigned vehicle.
 4. Validate coordinate ranges, accuracy, speed, heading, and timestamps.
-5. Reject samples too far in the future or beyond the accepted history window.
-6. Deduplicate by `sampleId`.
+5. Reject samples too far in the future or beyond the accepted device-queue window.
+6. Deduplicate repeated IDs within the batch and retries of the current latest sample.
 7. Store the accepted client `recordedAt` and a separate server `receivedAt`.
 8. Update the vehicle's latest-location projection only when the sample is newer.
 9. Publish one latest-position event after the transaction commits.
 
 The request should not automatically make a deliberately offline vehicle online. Sharing should require an active broadcast session created when the crew presses **Go online and share location**. This avoids a delayed retry unexpectedly changing vehicle state.
 
-### 4. Store current position and history separately
+### 4. Store only the current position
 
-Avoid querying the full history table to render every map refresh.
-
-Maintain:
-
-- `vehicle_latest_locations`: one row per vehicle, updated with the newest valid sample;
-- `vehicle_locations`: append-only history used for route analysis, debugging, and audit;
-- optional Redis latest-position entries when multiple API instances or high viewer volume justify it.
-
-Recommended indexes:
-
-```text
-unique(sample_id)
-(vehicle_id, recorded_at desc)
-(recorded_at)
-```
-
-Apply a retention policy to detailed history. A reasonable starting point is 7–30 days, followed by aggregation or deletion. The exact duration should be approved as a product and privacy decision.
+Maintain `vehicle_latest_locations`: one row per vehicle, overwritten only by a newer valid sample. The device queue remains responsible for short-term retry. Historical trails are deliberately not retained by the API. Optional Redis latest-position entries can be added when multiple API instances or high viewer volume justify it.
 
 ### 5. Broadcast to viewers
 
@@ -296,7 +276,7 @@ Use structured logs without logging exact coordinates at normal information leve
 - Crew can explicitly start and stop location sharing.
 - An assigned vehicle updates on public maps within 20 seconds under normal connectivity.
 - No other crew account can update that vehicle.
-- Duplicate retries do not create duplicate history rows.
+- Duplicate retries do not overwrite the current position unnecessarily.
 - Temporary loss of connectivity does not lose recent samples.
 - Background sharing has a persistent Android notification and survives screen lock.
 - Going offline, signing out, losing assignment, or stopping sharing terminates broadcasting.
