@@ -24,9 +24,11 @@ export class LiveMapComponent implements OnInit {
   loading = true;
   error = '';
   menuOpen = false;
+  readonly profileImageUrls: Record<string, string> = {};
 
   private readonly searchTerms = new Subject<string>();
   private readonly destroyRef = inject(DestroyRef);
+  private readonly profileImagesRequested = new Set<string>();
 
   constructor(
     private readonly api: KultureApiService,
@@ -63,6 +65,7 @@ export class LiveMapComponent implements OnInit {
       )
       .subscribe((vehicles) => {
         this.vehicles = vehicles;
+        this.loadProfileImages(vehicles);
         this.loading = false;
       });
   }
@@ -113,7 +116,31 @@ export class LiveMapComponent implements OnInit {
       )
       .subscribe((vehicles) => {
         this.vehicles = vehicles;
+        this.loadProfileImages(vehicles);
         this.loading = false;
       });
+  }
+
+  private loadProfileImages(vehicles: VehicleSummaryResponse[]): void {
+    for (const vehicle of vehicles) {
+      if (this.profileImagesRequested.has(vehicle.id)) continue;
+      this.profileImagesRequested.add(vehicle.id);
+      this.api.getVehicleImages(vehicle.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: images => {
+            if (!images.length) return;
+            const randomImage = images[Math.floor(Math.random() * images.length)];
+            this.preloadProfileImage(vehicle.id, randomImage.url);
+          },
+          error: () => this.profileImagesRequested.delete(vehicle.id)
+        });
+    }
+  }
+
+  private preloadProfileImage(vehicleId: string, url: string): void {
+    const image = new Image();
+    image.onload = () => this.profileImageUrls[vehicleId] = url;
+    image.src = url;
   }
 }

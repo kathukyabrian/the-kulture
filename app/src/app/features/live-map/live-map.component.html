@@ -78,8 +78,9 @@
         [routerLink]="['/nganyas', vehicle.id]"
         class="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg border border-outline/60 bg-surface-high/70 p-3 rim-light active:scale-[0.99]"
       >
-        <div class="grid h-14 w-16 place-items-center rounded bg-background font-mono text-sm font-bold text-primary">
-          [ {{ vehicle.routeNumber }} ]
+        <div class="relative h-14 w-16 overflow-hidden rounded bg-background font-mono text-sm font-bold text-primary">
+          <img *ngIf="profileImageUrls[vehicle.id]; else routeNumber" [src]="profileImageUrls[vehicle.id]" [alt]="vehicle.name + ' profile picture'" class="h-full w-full animate-[profile-image-in_180ms_ease-out] object-cover" />
+          <ng-template #routeNumber><span class="grid h-full w-full place-items-center">[ {{ vehicle.routeNumber }} ]</span></ng-template>
         </div>
         <div class="min-w-0">
           <h2 class="truncate font-display text-lg font-extrabold uppercase">{{ vehicle.name }}</h2>
