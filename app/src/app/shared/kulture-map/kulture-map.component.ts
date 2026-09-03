@@ -5,7 +5,7 @@ import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, LngLatBoundsLike, Map } from 'maplibre-gl';
 import { RouteGeometry, RouteResponse, VehicleSummaryResponse } from '../../core/api.models';
 
-@Component({ selector: 'app-kulture-map', standalone: true, imports: [CommonModule], template: '<div class="relative h-full min-h-[inherit] w-full"><div #container class="absolute inset-0"></div><div *ngIf="editable" class="absolute left-3 top-3 z-10 flex gap-2"><button type="button" (click)="undo()" [disabled]="!draft.length" class="rounded bg-surface px-3 py-2 text-xs text-ink shadow disabled:opacity-40">Undo last</button><button type="button" (click)="clear()" [disabled]="!draft.length" class="rounded bg-danger px-3 py-2 text-xs text-white shadow disabled:opacity-40">Start over</button></div><div class="absolute right-3 top-3 z-10 flex flex-col items-end gap-2"><button type="button" (click)="moveToCurrentLocation()" [disabled]="locating" class="rounded bg-surface px-3 py-2 font-mono text-xs font-bold uppercase text-secondary shadow disabled:opacity-60">{{ locating ? \'Locating…\' : \'My location\' }}</button><button type="button" (click)="resetToNairobi()" class="rounded bg-surface px-3 py-2 font-mono text-xs font-bold uppercase text-secondary shadow">Nairobi</button><p *ngIf="locationError" class="max-w-48 rounded bg-danger px-2 py-1 text-right text-xs text-white shadow">{{ locationError }}</p></div><div *ngIf="editable" class="absolute bottom-3 left-3 right-3 z-10 rounded bg-surface/95 p-3 text-center shadow"><p class="font-bold text-ink">{{ draft.length === 0 ? \'1. Click the route starting point\' : draft.length === 1 ? \'2. Click the destination\' : \'Route ready · click along roads to refine it\' }}</p><p class="mt-1 text-xs text-muted">{{ draft.length < 2 ? \'You can zoom and move the map before selecting.\' : draft.length + \' points selected. Use Undo last if you make a mistake.\' }}</p></div></div>', styles: [':host{display:block;min-height:inherit}'] })
+@Component({ selector: 'app-kulture-map', standalone: true, imports: [CommonModule], template: '<div class="relative h-full min-h-[inherit] w-full"><div #container class="absolute inset-0"></div><div *ngIf="editable" class="absolute left-3 top-3 z-10 flex gap-2"><button type="button" (click)="undo()" [disabled]="!draft.length" class="rounded bg-surface px-3 py-2 text-xs text-ink shadow disabled:opacity-40">Undo last</button><button type="button" (click)="clear()" [disabled]="!draft.length" class="rounded bg-danger px-3 py-2 text-xs text-white shadow disabled:opacity-40">Start over</button></div><div class="absolute right-3 top-3 z-10 flex flex-col items-end gap-2"><button *ngIf="followedVehicle" type="button" (click)="resumeFollowing()" class="rounded bg-surface px-3 py-2 font-mono text-xs font-bold uppercase shadow" [ngClass]="followingVehicle ? \'text-primary\' : \'text-secondary\'">{{ followingVehicle ? \'Following \' : \'Follow \' }}{{ followedVehicle.name }}</button><button type="button" (click)="moveToCurrentLocation()" [disabled]="locating" class="rounded bg-surface px-3 py-2 font-mono text-xs font-bold uppercase text-secondary shadow disabled:opacity-60">{{ locating ? \'Locating…\' : \'My location\' }}</button><button type="button" (click)="resetToNairobi()" class="rounded bg-surface px-3 py-2 font-mono text-xs font-bold uppercase text-secondary shadow">Nairobi</button><p *ngIf="locationError" class="max-w-48 rounded bg-danger px-2 py-1 text-right text-xs text-white shadow">{{ locationError }}</p></div><div *ngIf="editable" class="absolute bottom-3 left-3 right-3 z-10 rounded bg-surface/95 p-3 text-center shadow"><p class="font-bold text-ink">{{ draft.length === 0 ? \'1. Click the route starting point\' : draft.length === 1 ? \'2. Click the destination\' : \'Route ready · click along roads to refine it\' }}</p><p class="mt-1 text-xs text-muted">{{ draft.length < 2 ? \'You can zoom and move the map before selecting.\' : draft.length + \' points selected. Use Undo last if you make a mistake.\' }}</p></div></div>', styles: [':host{display:block;min-height:inherit}'] })
 export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('container', { static: true }) container!: ElementRef<HTMLElement>;
   @Input() routes: RouteResponse[] = [];
@@ -18,6 +18,8 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private map?: Map;
   private currentLocationMarker?: maplibregl.Marker;
   private pulseAnimationFrame?: number;
+  private followedVehicleId: string | null = null;
+  followingVehicle = false;
   draft: [number, number][] = [];
   locating = false;
   locationError = '';
@@ -31,6 +33,8 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
     this.map.on('styledata', () => { this.installLayers(); this.sync(!this.viewportInitialized); });
     this.map.on('click', event => { if (!this.editable) return; this.draft.push([event.lngLat.lng, event.lngLat.lat]); this.emitDraft(); });
+    this.map.on('dragstart', () => this.pauseFollowing());
+    this.map.on('rotatestart', () => this.pauseFollowing());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -41,7 +45,9 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   ngOnDestroy(): void { if (this.pulseAnimationFrame !== undefined) cancelAnimationFrame(this.pulseAnimationFrame); this.currentLocationMarker?.remove(); this.map?.remove(); }
   undo(): void { this.draft.pop(); this.emitDraft(); }
   clear(): void { this.draft = []; this.emitDraft(); }
-  resetToNairobi(): void { this.map?.easeTo({ center: [36.8219, -1.2921], zoom: 12, duration: 500 }); this.viewportInitialized = true; }
+  get followedVehicle(): VehicleSummaryResponse | undefined { return this.vehicles.find(vehicle => vehicle.id === this.followedVehicleId); }
+  resetToNairobi(): void { this.followedVehicleId = null; this.followingVehicle = false; this.map?.easeTo({ center: [36.8219, -1.2921], zoom: 12, bearing: 0, pitch: 0, duration: 500 }); this.viewportInitialized = true; }
+  resumeFollowing(): void { if (!this.followedVehicle) return; this.followingVehicle = true; this.updateFollowCamera(); }
   moveToCurrentLocation(): void {
     if (!navigator.geolocation) { this.locationError = 'Location is unavailable on this device.'; return; }
     this.locating = true;
@@ -49,6 +55,8 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     navigator.geolocation.getCurrentPosition(position => {
       this.locating = false;
       const coordinates: [number, number] = [position.coords.longitude, position.coords.latitude];
+      this.followedVehicleId = null;
+      this.followingVehicle = false;
       this.currentLocationMarker?.remove();
       this.currentLocationMarker = new maplibregl.Marker({ color: '#a7ffb3' }).setLngLat(coordinates).addTo(this.map!);
       this.map?.easeTo({ center: coordinates, zoom: 15, duration: 700 });
@@ -73,7 +81,14 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map.addLayer({ id: 'vehicle-pulse', type: 'circle', source: 'vehicles', paint: { 'circle-radius': 13, 'circle-color': statusColor, 'circle-opacity': 0.18 } });
     this.map.addLayer({ id: 'vehicle-points', type: 'circle', source: 'vehicles', paint: { 'circle-radius': 8, 'circle-color': statusColor, 'circle-stroke-color': '#131313', 'circle-stroke-width': 3 } });
     this.animateVehiclePulse();
-    this.map.on('click', 'vehicle-points', event => { const feature = event.features?.[0]; if (!feature || feature.geometry.type !== 'Point') return; new maplibregl.Popup().setLngLat(feature.geometry.coordinates as [number, number]).setHTML(`<strong>${feature.properties?.['name'] ?? 'Nganya'}</strong><br>${feature.properties?.['status'] ?? ''}`).addTo(this.map!); });
+    this.map.on('click', 'vehicle-points', event => {
+      const feature = event.features?.[0];
+      if (!feature || feature.geometry.type !== 'Point') return;
+      this.followedVehicleId = String(feature.properties?.['id'] ?? '');
+      this.followingVehicle = true;
+      this.updateFollowCamera();
+      new maplibregl.Popup().setLngLat(feature.geometry.coordinates as [number, number]).setHTML(`<strong>${feature.properties?.['name'] ?? 'Nganya'}</strong><br>${feature.properties?.['status'] ?? ''}`).addTo(this.map!);
+    });
   }
 
   private sync(fitViewport = false): void {
@@ -81,6 +96,7 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     (this.map.getSource('routes') as GeoJSONSource | undefined)?.setData(this.routeCollection());
     (this.map.getSource('draft-points') as GeoJSONSource | undefined)?.setData(this.draftPointCollection());
     (this.map.getSource('vehicles') as GeoJSONSource | undefined)?.setData(this.vehicleCollection());
+    if (this.followingVehicle && this.followedVehicle?.status === 'ONLINE' && this.followedVehicle.latestLocation) { this.updateFollowCamera(); return; }
     if (!fitViewport) return;
     const points: [number, number][] = [...this.routes.flatMap(route => route.geometry?.coordinates ?? []), ...(this.geometry?.coordinates ?? []), ...this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [[Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] as [number, number]] : [])];
     if (!points.length) {
@@ -102,6 +118,25 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map.setPaintProperty('vehicle-pulse', 'circle-radius', 11 + phase * 6);
     this.map.setPaintProperty('vehicle-pulse', 'circle-opacity', 0.24 * (1 - phase));
     this.pulseAnimationFrame = requestAnimationFrame(() => this.animateVehiclePulse());
+  }
+
+  private pauseFollowing(): void { if (this.followingVehicle) this.followingVehicle = false; }
+
+  private updateFollowCamera(): void {
+    const location = this.followedVehicle?.latestLocation;
+    if (!this.map || !location) return;
+    const heading = Number(location.headingDegrees);
+    const hasReliableHeading = location.headingDegrees != null && Number(location.speedKph) >= 3 && Number.isFinite(heading);
+    const currentBearing = this.map.getBearing();
+    const bearing = hasReliableHeading ? currentBearing + ((((heading - currentBearing) % 360) + 540) % 360 - 180) : currentBearing;
+    this.map.easeTo({
+      center: [Number(location.longitude), Number(location.latitude)],
+      zoom: Math.max(this.map.getZoom(), 15.5),
+      bearing,
+      pitch: hasReliableHeading ? 45 : this.map.getPitch(),
+      duration: 900
+    });
+    this.viewportInitialized = true;
   }
 
   private vehicleCollection(): FeatureCollection<Point> { return { type: 'FeatureCollection', features: this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [{ type: 'Feature' as const, properties: { id: vehicle.id, name: vehicle.name, status: vehicle.status, stale: Date.now() - new Date(vehicle.latestLocation.recordedAt).getTime() > 60000 }, geometry: { type: 'Point' as const, coordinates: [Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] } }] : []) }; }

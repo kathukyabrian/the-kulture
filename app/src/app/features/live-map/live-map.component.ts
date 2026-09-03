@@ -41,7 +41,7 @@ export class LiveMapComponent implements OnInit {
   ngOnInit(): void {
     timer(0, 30000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadVehicles(false));
     this.locationEvents.stream().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
-      this.vehicles = this.vehicles.map(vehicle => vehicle.id === event.vehicleId ? { ...vehicle, latestLocation: { latitude: event.latitude, longitude: event.longitude, speedKph: event.speedKph, recordedAt: event.recordedAt } } : vehicle);
+      this.vehicles = this.vehicles.map(vehicle => vehicle.id === event.vehicleId ? { ...vehicle, latestLocation: { latitude: event.latitude, longitude: event.longitude, speedKph: event.speedKph, headingDegrees: event.headingDegrees, recordedAt: event.recordedAt } } : vehicle);
     });
     this.api.getRoutes().subscribe({ next: routes => this.routes = routes });
     this.searchTerms

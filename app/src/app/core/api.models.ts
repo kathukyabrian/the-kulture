@@ -36,6 +36,7 @@ export interface LocationResponse {
   latitude: number;
   longitude: number;
   speedKph: number;
+  headingDegrees?: number | null;
   recordedAt: string;
 }
 
@@ -45,6 +46,7 @@ export interface VehicleLocationEvent {
   latitude: number;
   longitude: number;
   speedKph: number;
+  headingDegrees?: number | null;
   recordedAt: string;
 }
 
