@@ -40,6 +40,14 @@ export interface LocationResponse {
   recordedAt: string;
 }
 
+export type ArrivalEstimateStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'STALE_LOCATION' | 'PASSENGER_LOCATION_UNRELIABLE' | 'OFF_ROUTE' | 'PASSED' | 'NOT_APPROACHING' | 'ROUTE_UNAVAILABLE';
+export interface ArrivalEstimateResponse {
+  vehicleId: string; status: ArrivalEstimateStatus; minimumMinutes: number | null; maximumMinutes: number | null;
+  remainingDistanceMeters: number | null; vehicleLocationTimestamp: string | null; estimatedAt: string;
+  confidence: 'LOW' | 'MEDIUM' | 'HIGH'; reason: string | null;
+  passengerPosition: { latitude: number; longitude: number } | null; vehiclePosition: { latitude: number; longitude: number } | null;
+}
+
 export interface VehicleLocationEvent {
   sampleId: string;
   vehicleId: string;

@@ -22,6 +22,7 @@ public class SecurityConfiguration {
 			.csrf(csrf -> csrf.disable())
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/password/setup", "/api/auth/password/forgot", "/api/auth/password/reset").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/vehicles/arrival-estimates", "/api/vehicles/{vehicleId}/arrival-estimate").permitAll()
 				.requestMatchers("/api/routes/**", "/api/vehicles/**", "/api/media/**").permitAll()
 				.requestMatchers("/api/admin/**").hasRole("ADMIN")
 				.requestMatchers("/api/crew/**").hasRole("CREW")

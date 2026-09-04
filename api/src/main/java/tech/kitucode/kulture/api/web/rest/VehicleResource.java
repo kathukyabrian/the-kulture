@@ -8,6 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
+import tech.kitucode.kulture.api.service.ArrivalEstimateService;
+import tech.kitucode.kulture.api.web.rest.dto.ArrivalEstimateRequest;
+import tech.kitucode.kulture.api.web.rest.dto.ArrivalEstimateResponse;
 import tech.kitucode.kulture.api.service.VehicleService;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleDetailResponse;
 import tech.kitucode.kulture.api.web.rest.dto.VehicleSummaryResponse;
@@ -17,9 +23,11 @@ import tech.kitucode.kulture.api.web.rest.dto.VehicleSummaryResponse;
 public class VehicleResource {
 
 	private final VehicleService vehicleService;
+	private final ArrivalEstimateService arrivalEstimateService;
 
-	public VehicleResource(VehicleService vehicleService) {
+	public VehicleResource(VehicleService vehicleService, ArrivalEstimateService arrivalEstimateService) {
 		this.vehicleService = vehicleService;
+		this.arrivalEstimateService = arrivalEstimateService;
 	}
 
 	@GetMapping
@@ -40,5 +48,15 @@ public class VehicleResource {
 	@GetMapping("/{id}")
 	public VehicleDetailResponse get(@PathVariable UUID id) {
 		return vehicleService.get(id);
+	}
+
+	@PostMapping("/{id}/arrival-estimate")
+	public ArrivalEstimateResponse estimateArrival(@PathVariable UUID id, @Valid @RequestBody ArrivalEstimateRequest request) {
+		return arrivalEstimateService.estimate(id, request);
+	}
+
+	@PostMapping("/arrival-estimates")
+	public List<ArrivalEstimateResponse> estimateNearbyArrivals(@Valid @RequestBody ArrivalEstimateRequest request) {
+		return arrivalEstimateService.estimateNearby(request);
 	}
 }

@@ -13,10 +13,12 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Input() geometry: RouteGeometry | null = null;
   @Input() waypoints: [number, number][] = [];
   @Input() editable = false;
+  @Input() pickupPosition: [number, number] | null = null;
   @Output() geometryChange = new EventEmitter<RouteGeometry | null>();
   @Output() waypointsChange = new EventEmitter<[number, number][]>();
   private map?: Map;
   private currentLocationMarker?: maplibregl.Marker;
+  private pickupMarker?: maplibregl.Marker;
   private pulseAnimationFrame?: number;
   private followedVehicleId: string | null = null;
   followingVehicle = false;
@@ -42,7 +44,7 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     const fitViewport = !this.viewportInitialized || (!this.editable && (!!changes['routes'] || !!changes['geometry'] || !!changes['waypoints']));
     this.sync(fitViewport);
   }
-  ngOnDestroy(): void { if (this.pulseAnimationFrame !== undefined) cancelAnimationFrame(this.pulseAnimationFrame); this.currentLocationMarker?.remove(); this.map?.remove(); }
+  ngOnDestroy(): void { if (this.pulseAnimationFrame !== undefined) cancelAnimationFrame(this.pulseAnimationFrame); this.currentLocationMarker?.remove(); this.pickupMarker?.remove(); this.map?.remove(); }
   undo(): void { this.draft.pop(); this.emitDraft(); }
   clear(): void { this.draft = []; this.emitDraft(); }
   get followedVehicle(): VehicleSummaryResponse | undefined { return this.vehicles.find(vehicle => vehicle.id === this.followedVehicleId); }
@@ -93,12 +95,16 @@ export class KultureMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   private sync(fitViewport = false): void {
     if (!this.map) return;
+    if (this.pickupPosition) {
+      if (!this.pickupMarker) this.pickupMarker = new maplibregl.Marker({ color: '#ecb2ff' }).setLngLat(this.pickupPosition).addTo(this.map);
+      else this.pickupMarker.setLngLat(this.pickupPosition);
+    } else { this.pickupMarker?.remove(); this.pickupMarker = undefined; }
     (this.map.getSource('routes') as GeoJSONSource | undefined)?.setData(this.routeCollection());
     (this.map.getSource('draft-points') as GeoJSONSource | undefined)?.setData(this.draftPointCollection());
     (this.map.getSource('vehicles') as GeoJSONSource | undefined)?.setData(this.vehicleCollection());
     if (this.followingVehicle && this.followedVehicle?.status === 'ONLINE' && this.followedVehicle.latestLocation) { this.updateFollowCamera(); return; }
     if (!fitViewport) return;
-    const points: [number, number][] = [...this.routes.flatMap(route => route.geometry?.coordinates ?? []), ...(this.geometry?.coordinates ?? []), ...this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [[Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] as [number, number]] : [])];
+    const points: [number, number][] = [...this.routes.flatMap(route => route.geometry?.coordinates ?? []), ...(this.geometry?.coordinates ?? []), ...this.vehicles.flatMap(vehicle => vehicle.status === 'ONLINE' && vehicle.latestLocation ? [[Number(vehicle.latestLocation.longitude), Number(vehicle.latestLocation.latitude)] as [number, number]] : []), ...(this.pickupPosition ? [this.pickupPosition] : [])];
     if (!points.length) {
       this.resetToNairobi();
     } else if (points.length === 1) {

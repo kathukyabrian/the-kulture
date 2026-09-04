@@ -7,7 +7,7 @@ import {
   OccupancyStatus,
   VehicleSummaryResponse
 } from './api.models';
-import { PageResponse, RouteAdminRequest, RouteCalculationResponse, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
+import { ArrivalEstimateResponse, PageResponse, RouteAdminRequest, RouteCalculationResponse, RouteResponse, VehicleAdminUpdateRequest, MediaResponse, UserResponse, AccountRole, UserStatus, CrewContextResponse, TravellerContextResponse } from './api.models';
 import { environment } from '../../environments/environment';
 import { map } from 'rxjs';
 
@@ -31,6 +31,14 @@ export class KultureApiService {
 
   getVehicle(id: string) {
     return this.http.get<VehicleDetailResponse>(`${this.baseUrl}/vehicles/${id}`);
+  }
+
+  estimateArrival(vehicleId: string, position: { latitude: number; longitude: number; accuracyMeters: number; capturedAtEpochMillis: number }) {
+    return this.http.post<ArrivalEstimateResponse>(`${this.baseUrl}/vehicles/${vehicleId}/arrival-estimate`, position);
+  }
+
+  estimateNearbyArrivals(position: { latitude: number; longitude: number; accuracyMeters: number; capturedAtEpochMillis: number }) {
+    return this.http.post<ArrivalEstimateResponse[]>(`${this.baseUrl}/vehicles/arrival-estimates`, position);
   }
 
   getRoutes() {
